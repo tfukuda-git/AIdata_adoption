@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>高関心ユーザー特定×集中配信 実装ガイド</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: #f5f4f0;
+    color: #1a1a1a;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .page {
+    width: 1280px;
+    margin: 24px auto;
+    background: #fff;
+    border-radius: 12px;
+    padding: 36px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  }
+
+  /* ===== HEADER ===== */
+  .page-eyebrow { font-size: 10px; color: #888; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .page-title { font-size: 20px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+  .page-sub { font-size: 11px; color: #666; margin-bottom: 28px; }
+
+  /* ===== SECTION ===== */
+  .section { margin-bottom: 32px; }
+  .section-title {
+    font-size: 14px; font-weight: 700; color: #1a1a1a;
+    padding-bottom: 8px; border-bottom: 2px solid #1a1a1a;
+    margin-bottom: 16px;
+  }
+  .section-title .num {
+    display: inline-block;
+    width: 22px; height: 22px;
+    background: #1a1a1a; color: #fff;
+    border-radius: 50%; font-size: 11px;
+    text-align: center; line-height: 22px;
+    margin-right: 8px; vertical-align: middle;
+  }
+
+  /* ===== AUDIENCE TAGS ===== */
+  .audience { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 9px; font-weight: 700; margin-left: 8px; vertical-align: middle; }
+  .for-client { background: #dbeafe; color: #1e40af; }
+  .for-cs { background: #dcfce7; color: #166534; }
+  .for-both { background: #fef3c7; color: #92400e; }
+
+  /* ===== MECHANISM FLOW ===== */
+  .flow-grid {
+    display: grid;
+    grid-template-columns: 1fr 32px 1fr 32px 1fr 32px 1fr;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 16px;
+  }
+  .flow-box {
+    background: #fafaf8;
+    border: 1.5px solid #d0cec8;
+    border-radius: 8px;
+    padding: 12px 14px;
+    text-align: center;
+  }
+  .flow-box .fb-label { font-size: 9px; color: #888; margin-bottom: 3px; }
+  .flow-box .fb-title { font-size: 12px; font-weight: 700; color: #1a1a1a; }
+  .flow-box .fb-sub { font-size: 10px; color: #555; margin-top: 3px; line-height: 1.4; }
+  .flow-box.highlight { background: #e8f4e8; border-color: #4a9e4a; }
+  .flow-box.highlight .fb-title { color: #2d7a2d; }
+  .flow-arrow { text-align: center; font-size: 18px; color: #aaa; }
+
+  /* ===== 3-PATTERN CARDS ===== */
+  .pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .pattern-card {
+    border: 1.5px solid #e0ded8;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .pattern-header {
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .ph-visits { background: #2563a0; }
+  .ph-pages  { background: #257a3e; }
+  .ph-time   { background: #7c3aed; }
+  .pattern-body { padding: 12px 14px; background: #fafaf8; }
+  .pattern-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 5px 0;
+    border-bottom: 1px dashed #e8e6e0;
+    font-size: 10px;
+    gap: 8px;
+  }
+  .pattern-row:last-child { border-bottom: none; }
+  .pr-key { color: #666; flex-shrink: 0; width: 80px; }
+  .pr-val { color: #1a1a1a; font-weight: 500; line-height: 1.4; }
+  .trigger-badge {
+    display: inline-block; padding: 2px 7px;
+    background: #e8f4e8; border: 1px solid #4a9e4a;
+    border-radius: 4px; font-size: 9px; font-weight: 700;
+    color: #2d7a2d; margin-bottom: 4px;
+  }
+
+  /* ===== USECASE TABLE ===== */
+  .uc-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+  .uc-table th {
+    background: #e8e6e0; padding: 7px 10px;
+    font-size: 10px; font-weight: 700; color: #444;
+    text-align: left; border: 1px solid #d0cec8;
+  }
+  .uc-table td {
+    padding: 8px 10px; font-size: 11px; color: #333;
+    border: 1px solid #e0ded8; vertical-align: top; line-height: 1.5;
+  }
+  .uc-table tr:nth-child(even) td { background: #faf9f6; }
+  .cv-strong { font-weight: 700; color: #c0392b; }
+
+  /* ===== CODE BLOCK ===== */
+  .code-wrap { margin: 12px 0; }
+  .code-label {
+    display: inline-block; background: #1a1a1a; color: #fff;
+    font-size: 9px; font-weight: 700; padding: 3px 10px;
+    border-radius: 4px 4px 0 0; letter-spacing: 0.05em;
+  }
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    border-radius: 0 8px 8px 8px;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1.7;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .c-comment { color: #6c7086; }
+  .c-key     { color: #89b4fa; }
+  .c-str     { color: #a6e3a1; }
+  .c-num     { color: #fab387; }
+  .c-fn      { color: #cba6f7; }
+  .c-kw      { color: #f38ba8; }
+
+  /* ===== CAUTION BOX ===== */
+  .caution-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .caution-card {
+    border-radius: 8px;
+    padding: 12px 14px;
+    border: 1px solid #e0ded8;
+    background: #fafaf8;
+  }
+  .caution-title {
+    font-size: 11px; font-weight: 700; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .caution-icon {
+    width: 18px; height: 18px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; flex-shrink: 0;
+  }
+  .icon-warn { background: #fff3cd; color: #856404; }
+  .icon-ok   { background: #d4edda; color: #155724; }
+  .caution-body { font-size: 10px; color: #444; line-height: 1.6; }
+
+  /* ===== STEPS ===== */
+  .steps { display: flex; flex-direction: column; gap: 8px; }
+  .step-row { display: flex; align-items: flex-start; gap: 12px; }
+  .step-num {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #1a1a1a; color: #fff;
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 2px;
+  }
+  .step-content { flex: 1; }
+  .step-title { font-size: 12px; font-weight: 700; color: #1a1a1a; margin-bottom: 2px; }
+  .step-sub { font-size: 10px; color: #666; line-height: 1.5; }
+  .step-connector { width: 24px; display: flex; justify-content: center; }
+  .step-line { width: 1px; height: 16px; background: #ccc; margin: 0 auto; }
+
+  /* ===== NOTE ===== */
+  .note {
+    margin-top: 24px; padding: 10px 14px;
+    background: #fffbe8; border-left: 3px solid #f0c040;
+    border-radius: 4px; font-size: 10px; color: #666; line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="page-eyebrow">Mico Engage AI Webタグ — 応用実装ガイド</div>
+  <div class="page-title">カタログなし案件向け：localStorage活用による高関心ユーザー特定×集中配信</div>
+  <div class="page-sub">保険相談・ネット回線申込など「予約・申込がCV」の案件で、訪問頻度・閲覧深度から高関心ユーザーを自動検出し、集中配信するアプローチ</div>
+
+  <!-- ===== 1. 仕組み ===== -->
+  <div class="section">
+    <div class="section-title"><span class="num">1</span>仕組みの概要<span class="audience for-both">クライアント・社内共通</span></div>
+
+    <div class="flow-grid">
+      <div class="flow-box">
+        <div class="fb-label">ユーザー行動</div>
+        <div class="fb-title">LINEからWeb遷移</div>
+        <div class="fb-sub">訪問のたびに<br>行動を記録</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box highlight">
+        <div class="fb-label">ブラウザ内</div>
+        <div class="fb-title">localStorage<br>に蓄積</div>
+        <div class="fb-sub">訪問回数・閲覧ページ数<br>滞在時間をカウント</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">
+        <div class="fb-label">GTM</div>
+        <div class="fb-title">閾値を超えたら<br>イベント発火</div>
+        <div class="fb-sub">「5回訪問」「5P閲覧」<br>「10分滞在」などの条件</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box highlight">
+        <div class="fb-label">Mico Engage AI</div>
+        <div class="fb-title">高関心セグメント<br>→集中配信</div>
+        <div class="fb-sub">3日間連続配信など<br>シナリオで追いかける</div>
+      </div>
+    </div>
+
+    <div style="background:#f5f4f0;border-radius:8px;padding:12px 16px;font-size:11px;color:#444;line-height:1.7;">
+      💡 <strong>カタログなし案件でも使える理由：</strong>製品画像ではなく「行動データ」をシグナルにするため、カタログ連携が不要。保険相談・ネット回線・不動産問い合わせなど、Webで比較検討するが商品カタログを持たない案件に特に有効。
+    </div>
+  </div>
+
+  <!-- ===== 2. 3パターン ===== -->
+  <div class="section">
+    <div class="section-title"><span class="num">2</span>高関心シグナルの3パターン<span class="audience for-both">クライアント・社内共通</span></div>
+    <div class="pattern-grid">
+
+      <div class="pattern-card">
+        <div class="pattern-header ph-visits">パターンA：訪問回数（リピート検知）</div>
+        <div class="pattern-body">
+          <div class="pattern-row"><span class="pr-key">計測内容</span><span class="pr-val">7日以内の訪問回数をカウント</span></div>
+          <div class="pattern-row"><span class="pr-key">発火条件</span><span class="pr-val"><span class="trigger-badge">TRIGGER</span>7日間で5回以上の遷移</span></div>
+          <div class="pattern-row"><span class="pr-key">配信シナリオ</span><span class="pr-val">イベント発火から3日間、毎日1通の申込促進メッセージ</span></div>
+          <div class="pattern-row"><span class="pr-key">向いてる案件</span><span class="pr-val">保険相談、ローン比較など比較検討期間が長い案件</span></div>
+        </div>
+      </div>
+
+      <div class="pattern-card">
+        <div class="pattern-header ph-pages">パターンB：閲覧ページ数（深度検知）</div>
+        <div class="pattern-body">
+          <div class="pattern-row"><span class="pr-key">計測内容</span><span class="pr-val">1セッション内のページビュー数</span></div>
+          <div class="pattern-row"><span class="pr-key">発火条件</span><span class="pr-val"><span class="trigger-badge">TRIGGER</span>1回の訪問で5ページ以上閲覧</span></div>
+          <div class="pattern-row"><span class="pr-key">配信シナリオ</span><span class="pr-val">閲覧直後に「今すぐ相談」「無料診断」への誘導メッセージ</span></div>
+          <div class="pattern-row"><span class="pr-key">向いてる案件</span><span class="pr-val">ネット回線比較、保険プラン比較など選択肢が多い案件</span></div>
+        </div>
+      </div>
+
+      <div class="pattern-card">
+        <div class="pattern-header ph-time">パターンC：滞在時間（熟読検知）</div>
+        <div class="pattern-body">
+          <div class="pattern-row"><span class="pr-key">計測内容</span><span class="pr-val">ページ読み込みから離脱までの秒数</span></div>
+          <div class="pattern-row"><span class="pr-key">発火条件</span><span class="pr-val"><span class="trigger-badge">TRIGGER</span>累計滞在時間が600秒（10分）以上</span></div>
+          <div class="pattern-row"><span class="pr-key">配信シナリオ</span><span class="pr-val">「じっくり比較されている方へ」のパーソナル感ある訴求</span></div>
+          <div class="pattern-row"><span class="pr-key">向いてる案件</span><span class="pr-val">不動産・高額保険など熟考が必要な案件</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== 3. ユースケース別設定 ===== -->
+  <div class="section">
+    <div class="section-title"><span class="num">3</span>ユースケース別 設定パターン<span class="audience for-both">クライアント・社内共通</span></div>
+    <table class="uc-table">
+      <thead>
+        <tr>
+          <th style="width:120px;">案件タイプ</th>
+          <th style="width:120px;">高関心シグナル</th>
+          <th style="width:180px;">localStorage設定</th>
+          <th>配信シナリオ</th>
+          <th style="width:130px;">期待CV</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>保険相談</strong></td>
+          <td>7日間で5回以上訪問</td>
+          <td>訪問日時の配列を保存<br>7日以内カウントが5以上で発火</td>
+          <td>「複数回ご覧いただいているあなたへ、無料相談受付中」を3日間連続配信。日ごとに訴求角度を変える（1日目：安心感、2日目：限定性、3日目：CTA直球）</td>
+          <td class="cv-strong">無料相談予約<br><span style="font-weight:400;color:#555;font-size:10px;">比較検討中を確実にキャッチ</span></td>
+        </tr>
+        <tr>
+          <td><strong>ネット回線申込</strong></td>
+          <td>1訪問で5ページ以上閲覧</td>
+          <td>sessionStorageでPV数をカウント<br>5P超でMicoイベント発火</td>
+          <td>「プランを比較中のあなたへ、今なら工事費無料キャンペーン中」を即日配信。翌日・翌々日もリマインド</td>
+          <td class="cv-strong">申込完了<br><span style="font-weight:400;color:#555;font-size:10px;">比較検討の熱量が高いうちに</span></td>
+        </tr>
+        <tr>
+          <td><strong>不動産問い合わせ</strong></td>
+          <td>滞在時間10分以上</td>
+          <td>初回読み込み時刻を保存<br>離脱時に差分を計算し発火</td>
+          <td>「じっくりご検討いただいているお客様へ、担当者から直接ご連絡できます」と内見予約への導線を配信</td>
+          <td class="cv-strong">内見予約・問い合わせ<br><span style="font-weight:400;color:#555;font-size:10px;">熟読者は成約率が高い</span></td>
+        </tr>
+        <tr>
+          <td><strong>ローン・カードローン</strong></td>
+          <td>A＋Bの複合条件</td>
+          <td>訪問回数3回以上かつ<br>1訪問3ページ以上の両方で発火</td>
+          <td>「何度もご検討いただいているあなたへ、今だけ金利優遇」と審査申込への誘導。訴求はパーソナル感を強調</td>
+          <td class="cv-strong">審査申込<br><span style="font-weight:400;color:#555;font-size:10px;">複合条件で精度UP</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== 4. 実装コード ===== -->
+  <div class="section">
+    <div class="section-title"><span class="num">4</span>GTM実装コードサンプル<span class="audience for-cs">社内CS・実装者向け</span></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+      <div>
+        <div style="font-size:11px;font-weight:700;margin-bottom:8px;">パターンA：訪問回数カウント（7日間）</div>
+        <div class="code-wrap">
+          <div class="code-label">GTM カスタムHTML タグ</div>
+          <pre><span class="c-comment">// 全ページで発火するタグに設定</span>
+<span class="c-kw">&lt;script&gt;</span>
+<span class="c-fn">  (function</span>() {
+    <span class="c-kw">var</span> <span class="c-key">KEY</span> = <span class="c-str">'mico_visits'</span>;
+    <span class="c-kw">var</span> <span class="c-key">now</span> = <span class="c-fn">Date.now</span>();
+    <span class="c-kw">var</span> <span class="c-key">days7</span> = <span class="c-num">7</span> * <span class="c-num">24</span> * <span class="c-num">60</span> * <span class="c-num">60</span> * <span class="c-num">1000</span>;
+
+    <span class="c-comment">// 既存の訪問ログを取得・7日以内のみ残す</span>
+    <span class="c-kw">var</span> <span class="c-key">raw</span> = <span class="c-fn">localStorage.getItem</span>(<span class="c-key">KEY</span>);
+    <span class="c-kw">var</span> <span class="c-key">visits</span> = <span class="c-key">raw</span>
+      ? <span class="c-fn">JSON.parse</span>(<span class="c-key">raw</span>).<span class="c-fn">filter</span>(<span class="c-kw">function</span>(<span class="c-key">t</span>) {
+          <span class="c-kw">return</span> <span class="c-key">now</span> - <span class="c-key">t</span> &lt; <span class="c-key">days7</span>;
+        })
+      : [];
+
+    <span class="c-comment">// 今回の訪問を追加</span>
+    <span class="c-key">visits</span>.<span class="c-fn">push</span>(<span class="c-key">now</span>);
+    <span class="c-fn">localStorage.setItem</span>(<span class="c-key">KEY</span>,
+      <span class="c-fn">JSON.stringify</span>(<span class="c-key">visits</span>));
+
+    <span class="c-comment">// 閾値チェック → Micoイベント発火</span>
+    <span class="c-kw">if</span> (<span class="c-key">visits</span>.<span class="c-key">length</span> &gt;= <span class="c-num">5</span>) {
+      <span class="c-fn">mc_tracker</span>(<span class="c-str">'EVENT'</span>,
+        <span class="c-str">'high_interest_repeat'</span>, {});
+    }
+  })();
+<span class="c-kw">&lt;/script&gt;</span></pre>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:11px;font-weight:700;margin-bottom:8px;">パターンB：ページ閲覧数カウント（1セッション）</div>
+        <div class="code-wrap">
+          <div class="code-label">GTM カスタムHTML タグ</div>
+          <pre><span class="c-comment">// 全ページで発火するタグに設定</span>
+<span class="c-kw">&lt;script&gt;</span>
+<span class="c-fn">  (function</span>() {
+    <span class="c-kw">var</span> <span class="c-key">KEY</span> = <span class="c-str">'mico_pageviews'</span>;
+
+    <span class="c-comment">// セッション内PVをカウント</span>
+    <span class="c-kw">var</span> <span class="c-key">pv</span> = <span class="c-fn">parseInt</span>(
+      <span class="c-fn">sessionStorage.getItem</span>(<span class="c-key">KEY</span>) || <span class="c-str">'0'</span>
+    ) + <span class="c-num">1</span>;
+    <span class="c-fn">sessionStorage.setItem</span>(<span class="c-key">KEY</span>,
+      <span class="c-key">pv</span>.<span class="c-fn">toString</span>());
+
+    <span class="c-comment">// 5ページ目で1度だけ発火</span>
+    <span class="c-kw">if</span> (<span class="c-key">pv</span> === <span class="c-num">5</span>) {
+      <span class="c-fn">mc_tracker</span>(<span class="c-str">'EVENT'</span>,
+        <span class="c-str">'high_interest_deepread'</span>, {});
+    }
+  })();
+<span class="c-kw">&lt;/script&gt;</span></pre>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;margin-bottom:8px;margin-top:16px;">パターンC：滞在時間計測</div>
+        <div class="code-wrap">
+          <div class="code-label">GTM カスタムHTML タグ</div>
+          <pre><span class="c-comment">// 全ページで発火するタグに設定</span>
+<span class="c-kw">&lt;script&gt;</span>
+<span class="c-fn">  (function</span>() {
+    <span class="c-kw">var</span> <span class="c-key">ACC_KEY</span> = <span class="c-str">'mico_total_sec'</span>;
+    <span class="c-kw">var</span> <span class="c-key">FIRED_KEY</span> = <span class="c-str">'mico_hi_fired'</span>;
+    <span class="c-kw">var</span> <span class="c-key">start</span> = <span class="c-fn">Date.now</span>();
+
+    <span class="c-fn">window.addEventListener</span>(<span class="c-str">'pagehide'</span>,
+      <span class="c-kw">function</span>() {
+        <span class="c-kw">var</span> <span class="c-key">spent</span> = (<span class="c-fn">Date.now</span>() - <span class="c-key">start</span>)
+          / <span class="c-num">1000</span>;
+        <span class="c-kw">var</span> <span class="c-key">acc</span> = <span class="c-fn">parseFloat</span>(
+          <span class="c-fn">localStorage.getItem</span>(<span class="c-key">ACC_KEY</span>)
+          || <span class="c-str">'0'</span>) + <span class="c-key">spent</span>;
+        <span class="c-fn">localStorage.setItem</span>(
+          <span class="c-key">ACC_KEY</span>, <span class="c-key">acc</span>);
+
+        <span class="c-comment">// 600秒超・未発火なら実行</span>
+        <span class="c-kw">if</span> (<span class="c-key">acc</span> &gt;= <span class="c-num">600</span> &amp;&amp;
+          !<span class="c-fn">localStorage.getItem</span>(
+            <span class="c-key">FIRED_KEY</span>)) {
+          <span class="c-fn">mc_tracker</span>(<span class="c-str">'EVENT'</span>,
+            <span class="c-str">'high_interest_longstay'</span>,{});
+          <span class="c-fn">localStorage.setItem</span>(
+            <span class="c-key">FIRED_KEY</span>, <span class="c-str">'1'</span>);
+        }
+    });
+  })();
+<span class="c-kw">&lt;/script&gt;</span></pre>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== 5. 注意事項 ===== -->
+  <div class="section">
+    <div class="section-title"><span class="num">5</span>注意事項・事前確認ポイント<span class="audience for-cs">社内CS・実装者向け</span></div>
+    <div class="caution-grid">
+      <div class="caution-card" style="border-color:#ffc107;">
+        <div class="caution-title">
+          <span class="caution-icon icon-warn">⚠</span>
+          LINE WebView とSafari で localStorage が分離される
+        </div>
+        <div class="caution-body">
+          LINEアプリ内ブラウザ（WebView）とSafariは別のlocalStorageを持つため、LINEからの遷移→Safariで再訪問した場合にカウントが引き継がれない。<br>
+          <strong>対策：</strong>mc_tokenをURLパラメータで引き回し、訪問ログをサーバーサイドで管理する方法も検討。まずはLINE WebView内のみで完結するフローでPoC推奨。
+        </div>
+      </div>
+      <div class="caution-card" style="border-color:#ffc107;">
+        <div class="caution-title">
+          <span class="caution-icon icon-warn">⚠</span>
+          iOS Safari プライベートブラウジングの制限
+        </div>
+        <div class="caution-body">
+          iOSのプライベートブラウジング時はlocalStorageの書き込みが制限・初期化される場合がある。<br>
+          <strong>対策：</strong>try-catchでエラーをキャッチし、localStorageが使えない場合はsessionStorageにフォールバックする実装を推奨。
+        </div>
+      </div>
+      <div class="caution-card" style="border-color:#28a745;">
+        <div class="caution-title">
+          <span class="caution-icon icon-ok">✓</span>
+          GTMプレビューモードで動作確認できる
+        </div>
+        <div class="caution-body">
+          GTMのプレビューモード＋ブラウザ開発者ツール（Application → localStorage）で値の書き込みを目視確認できる。<br>
+          <strong>確認手順：</strong>①GTMプレビュー起動 → ②対象ページを複数回遷移 → ③開発者ツールでlocalStorageの値が増えているか確認 → ④Networkタブでmc_trackerのeventが発火しているか確認。
+        </div>
+      </div>
+      <div class="caution-card" style="border-color:#28a745;">
+        <div class="caution-title">
+          <span class="caution-icon icon-ok">✓</span>
+          重複発火防止フラグの設定を忘れずに
+        </div>
+        <div class="caution-body">
+          閾値を超えた後もページ遷移のたびにイベントが発火し続けることを防ぐため、「発火済みフラグ」をlocalStorageに保存する実装が必要。<br>
+          <strong>実装例：</strong>上記パターンCのコードサンプル参照（FIRED_KEYで制御）。パターンA・BもMicoでのセグメント重複を防ぐため同様のフラグ処理を追加推奨。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. 導入ステップ ===== -->
+  <div class="section">
+    <div class="section-title"><span class="num">6</span>導入ステップ<span class="audience for-cs">社内CS・実装者向け</span></div>
+    <div class="steps">
+      <div class="step-row">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Micoでイベントキーを作成・ONにする</div>
+          <div class="step-sub">サイト設定 → Webイベント → 「high_interest_repeat」「high_interest_deepread」「high_interest_longstay」を追加してONに設定</div>
+        </div>
+      </div>
+      <div class="step-row"><div class="step-connector"><div class="step-line"></div></div></div>
+      <div class="step-row">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">GTMにカスタムHTMLタグを追加（トリガー：全ページ）</div>
+          <div class="step-sub">上記コードサンプルをGTMカスタムHTMLタグとして設定。トリガーは「All Pages」。Web連携タグより後に発火するよう優先度を調整</div>
+        </div>
+      </div>
+      <div class="step-row"><div class="step-connector"><div class="step-line"></div></div></div>
+      <div class="step-row">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">GTMプレビューモードで動作確認</div>
+          <div class="step-sub">複数回ページ遷移 → localStorageの値が増えるか確認 → 閾値超過時にmc_trackerのeventが発火するか確認（NetworkタブでStatus 200を確認）</div>
+        </div>
+      </div>
+      <div class="step-row"><div class="step-connector"><div class="step-line"></div></div></div>
+      <div class="step-row">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">Micoでセグメント作成 → シナリオ配信を設定</div>
+          <div class="step-sub">イベント受信したユーザーをセグメント化 → ステップ配信（1日目・2日目・3日目）で訴求内容を変えながら集中配信。配信間隔・通数はクライアントと合意</div>
+        </div>
+      </div>
+      <div class="step-row"><div class="step-connector"><div class="step-line"></div></div></div>
+      <div class="step-row">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">GTMを公開（Publish）して本番反映</div>
+          <div class="step-sub">公開後、実際にLINEから遷移して本番環境での動作を最終確認。Micoのカスタマー画面にイベントが記録されているかをあわせてチェック</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    ⚠️ localStorageはブラウザ・デバイス単位での管理のため、別デバイス・別ブラウザ間でのデータ引き継ぎはできません。まずはLINE WebView内で完結するフローでのPoCを推奨します。実装前に担当CSへご相談ください。
+  </div>
+
+</div>
+</body>
+</html>

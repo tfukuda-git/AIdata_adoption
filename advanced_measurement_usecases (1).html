@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Measurement × Catalog Recommendation ユースケース集</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: #f5f4f0;
+    color: #1a1a1a;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .page {
+    width: 1280px;
+    margin: 24px auto;
+    background: #fff;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  }
+  .page-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+  }
+  .page-sub {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 24px;
+  }
+
+  /* ===== OVERVIEW BAR ===== */
+  .overview {
+    display: grid;
+    grid-template-columns: 1fr 40px 1fr 40px 1fr;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 28px;
+    background: #f5f4f0;
+    border-radius: 8px;
+    padding: 14px 20px;
+  }
+  .ov-box {
+    text-align: center;
+  }
+  .ov-label { font-size: 10px; color: #888; margin-bottom: 4px; }
+  .ov-title { font-size: 13px; font-weight: 700; color: #1a1a1a; }
+  .ov-sub { font-size: 10px; color: #555; margin-top: 2px; }
+  .ov-arrow { text-align: center; font-size: 20px; color: #aaa; }
+
+  /* ===== INDUSTRY SECTIONS ===== */
+  .industry-section {
+    margin-bottom: 24px;
+  }
+  .industry-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .industry-badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .badge-ec { background: #2563a0; }
+  .badge-hr { background: #257a3e; }
+  .badge-re { background: #c0392b; }
+  .badge-fi { background: #7c3aed; }
+
+  .industry-attrs {
+    font-size: 10px;
+    color: #666;
+    background: #f5f4f0;
+    padding: 3px 10px;
+    border-radius: 10px;
+  }
+
+  /* ===== USECASE TABLE ===== */
+  .uc-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .uc-table th {
+    background: #e8e6e0;
+    padding: 7px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #444;
+    text-align: left;
+    border: 1px solid #d0cec8;
+    white-space: nowrap;
+  }
+  .uc-table td {
+    padding: 8px 10px;
+    font-size: 11px;
+    color: #333;
+    border: 1px solid #e0ded8;
+    vertical-align: top;
+    line-height: 1.55;
+  }
+  .uc-table tr:nth-child(even) td { background: #faf9f6; }
+
+  .poc-tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-size: 9px;
+    font-weight: 700;
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffc107;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  .new-tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-size: 9px;
+    font-weight: 700;
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #28a745;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+
+  .cv-strong { font-weight: 700; color: #c0392b; }
+  .trigger-chip {
+    display: inline-block;
+    background: #e8f4e8;
+    border: 1px solid #4a9e4a;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 10px;
+    color: #2d7a2d;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+
+  /* ===== ROADMAP ===== */
+  .roadmap {
+    margin-top: 28px;
+    border: 1.5px solid #e0ded8;
+    border-radius: 10px;
+    padding: 16px 20px;
+    background: #fafaf8;
+  }
+  .roadmap-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #1a1a1a;
+  }
+  .roadmap-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .roadmap-col {
+    border-radius: 8px;
+    padding: 12px 14px;
+    border: 1px solid #ddd;
+    background: #fff;
+  }
+  .roadmap-col-title {
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #eee;
+  }
+  .roadmap-item {
+    font-size: 10px;
+    color: #444;
+    padding: 3px 0;
+    border-bottom: 1px dashed #f0f0f0;
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+  }
+  .roadmap-item:last-child { border-bottom: none; }
+  .roadmap-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .dot-now { background: #c0392b; }
+  .dot-next { background: #2563a0; }
+  .dot-future { background: #7c3aed; }
+
+  .note {
+    margin-top: 16px;
+    padding: 10px 14px;
+    background: #fffbe8;
+    border-left: 3px solid #f0c040;
+    border-radius: 4px;
+    font-size: 10px;
+    color: #666;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="page-title">Advanced Measurement × Catalog Recommendation ユースケース集</div>
+  <div class="page-sub">Mico Engage AI Webタグ — 業種別 活用パターン（PoC中機能）</div>
+
+  <!-- OVERVIEW -->
+  <div class="overview">
+    <div class="ov-box">
+      <div class="ov-label">STEP 1</div>
+      <div class="ov-title">Advanced Measurement</div>
+      <div class="ov-sub">Webページ上の属性データを取得<br>（エリア・製品ID・サイズ・カラー等）</div>
+    </div>
+    <div class="ov-arrow">→</div>
+    <div class="ov-box">
+      <div class="ov-label">STEP 2</div>
+      <div class="ov-title">Catalog Recommendation</div>
+      <div class="ov-sub">カタログを取得し属性でフィルタリング<br>（製品画像・物件画像・求人情報）</div>
+    </div>
+    <div class="ov-arrow">→</div>
+    <div class="ov-box">
+      <div class="ov-label">STEP 3</div>
+      <div class="ov-title">パーソナライズ配信</div>
+      <div class="ov-sub">静的画像ではなく<br>ユーザーの行動に紐づいた動的コンテンツで配信</div>
+    </div>
+  </div>
+
+  <!-- EC -->
+  <div class="industry-section">
+    <div class="industry-header">
+      <span class="industry-badge badge-ec">EC・通販</span>
+      <span class="industry-attrs">取得属性：製品ID・サイズ・カラー・カテゴリ・価格帯</span>
+    </div>
+    <table class="uc-table">
+      <thead>
+        <tr>
+          <th style="width:160px;">ユースケース</th>
+          <th style="width:200px;">取得データ × トリガー</th>
+          <th>配信内容</th>
+          <th style="width:160px;">期待CV</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>カート落ちレコメンド</strong><span class="poc-tag">PoC中</span></td>
+          <td>
+            <div class="trigger-chip">カートページ閲覧→離脱</div>
+            製品ID・画像をカタログから取得
+          </td>
+          <td>カートに入れた商品の<strong>製品画像付き</strong>リマインド配信。静的バナーでなく該当商品がそのまま表示される</td>
+          <td class="cv-strong">購入完了<br><span style="font-weight:400;color:#555;font-size:10px;">CVに最も近い離脱ポイント</span></td>
+        </tr>
+        <tr>
+          <td><strong>在庫切れ→再入荷通知</strong></td>
+          <td>
+            <div class="trigger-chip">商品詳細閲覧（在庫切れ）</div>
+            製品ID・サイズ・カラーを取得<br>→ 再入荷時に発火
+          </td>
+          <td>「お気に入りのサイズが戻ってきました」+<strong>該当バリエーション画像</strong>で配信。汎用バナーでなくピンポイントで訴求</td>
+          <td class="cv-strong">購入完了<br><span style="font-weight:400;color:#555;font-size:10px;">購買意欲が高い状態でキャッチ</span></td>
+        </tr>
+        <tr>
+          <td><strong>価格帯別 売れ筋レコメンド</strong></td>
+          <td>
+            <div class="trigger-chip">商品詳細閲覧→未購入</div>
+            閲覧商品の価格帯・カテゴリを取得
+          </td>
+          <td>「同価格帯の人気ランキング」を<strong>カタログ画像一覧</strong>で配信。類似商品への送客でCV機会を拡大</td>
+          <td class="cv-strong">購入完了<br><span style="font-weight:400;color:#555;font-size:10px;">別商品でもCV獲得</span></td>
+        </tr>
+        <tr>
+          <td><strong>コーデ・セット提案</strong></td>
+          <td>
+            <div class="trigger-chip">商品詳細閲覧（カテゴリ取得）</div>
+            製品ID・カテゴリ・カラーを取得
+          </td>
+          <td>閲覧したアイテムに合わせた「コーディネート提案」を<strong>セット画像カタログ</strong>で配信。「このアウターに合うパンツ」のように関連商品への送客で客単価・CV数を同時に拡大</td>
+          <td class="cv-strong">購入完了（複数点）<br><span style="font-weight:400;color:#555;font-size:10px;">客単価UPとCV拡大を両立</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 人材 -->
+  <div class="industry-section">
+    <div class="industry-header">
+      <span class="industry-badge badge-hr">人材・求人</span>
+      <span class="industry-attrs">取得属性：求人ID・エリア・職種・雇用形態・給与帯</span>
+    </div>
+    <table class="uc-table">
+      <thead>
+        <tr>
+          <th style="width:160px;">ユースケース</th>
+          <th style="width:200px;">取得データ × トリガー</th>
+          <th>配信内容</th>
+          <th style="width:160px;">期待CV</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>求人カート落ち<br>（類似求人レコメンド）</strong><span class="poc-tag">PoC中</span></td>
+          <td>
+            <div class="trigger-chip">求人詳細閲覧→未応募</div>
+            求人ID・エリア・職種を取得
+          </td>
+          <td>閲覧した求人<strong>画像＋類似求人</strong>をカタログで配信。「こんな求人もあります」で応募機会を広げる</td>
+          <td class="cv-strong">応募完了<br><span style="font-weight:400;color:#555;font-size:10px;">閲覧後の温度感が高いうちに接触</span></td>
+        </tr>
+        <tr>
+          <td><strong>応募締切前リマインド</strong></td>
+          <td>
+            <div class="trigger-chip">求人詳細閲覧→締切N日前</div>
+            求人IDと締切日をカタログから取得
+          </td>
+          <td>「この求人、締切3日前です」+<strong>求人画像付き</strong>でリマインド。記憶が薄れる前に再接触し応募を後押し</td>
+          <td class="cv-strong">応募完了<br><span style="font-weight:400;color:#555;font-size:10px;">締切訴求で行動喚起</span></td>
+        </tr>
+        <tr>
+          <td><strong>エリア×職種 新着通知</strong></td>
+          <td>
+            <div class="trigger-chip">求人検索・閲覧履歴</div>
+            エリア・職種・雇用形態を蓄積
+          </td>
+          <td>「渋谷×マーケ職の新着が出ました」と<strong>新着求人画像</strong>を配信。条件に合う求人が出るたびに自動通知</td>
+          <td class="cv-strong">応募完了<br><span style="font-weight:400;color:#555;font-size:10px;">条件一致で応募率が高い</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 不動産 -->
+  <div class="industry-section">
+    <div class="industry-header">
+      <span class="industry-badge badge-re">不動産</span>
+      <span class="industry-attrs">取得属性：物件エリア・路線・駅・種別（賃貸/売買）・価格帯・家賃帯</span>
+    </div>
+    <table class="uc-table">
+      <thead>
+        <tr>
+          <th style="width:160px;">ユースケース</th>
+          <th style="width:200px;">取得データ × トリガー</th>
+          <th>配信内容</th>
+          <th style="width:160px;">期待CV</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>同条件の新着物件カタログ</strong></td>
+          <td>
+            <div class="trigger-chip">物件詳細閲覧→未問い合わせ</div>
+            エリア・種別・価格帯を取得
+          </td>
+          <td>「◯◯駅エリアに新着物件が出ました」+<strong>物件画像カタログ</strong>で配信。条件にマッチした物件を自動でリコメンド</td>
+          <td class="cv-strong">問い合わせ・内見予約<br><span style="font-weight:400;color:#555;font-size:10px;">検索条件一致で反応率UP</span></td>
+        </tr>
+        <tr>
+          <td><strong>内見予約 離脱リマインド</strong></td>
+          <td>
+            <div class="trigger-chip">内見フォーム閲覧→未完了</div>
+            物件ID・画像をカタログから取得
+          </td>
+          <td>「この物件、まだご予約いただけます」+<strong>物件画像</strong>でリマインド。フォーム離脱からの再訪を促進</td>
+          <td class="cv-strong">内見予約完了<br><span style="font-weight:400;color:#555;font-size:10px;">CVに最も近い離脱ポイント</span></td>
+        </tr>
+        <tr>
+          <td><strong>賃貸→売買 クロスレコメンド</strong></td>
+          <td>
+            <div class="trigger-chip">賃貸物件を複数閲覧</div>
+            家賃帯・エリアを蓄積・分析
+          </td>
+          <td>家賃帯から「月々の返済額に換算すると購入も可能」な売買物件を<strong>画像付き</strong>で配信。潜在的な購入検討層を掘り起こす</td>
+          <td class="cv-strong">資料請求・問い合わせ<br><span style="font-weight:400;color:#555;font-size:10px;">LTV向上・単価UP</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 金融 -->
+  <div class="industry-section">
+    <div class="industry-header">
+      <span class="industry-badge badge-fi">金融・保険・ローン</span>
+      <span class="industry-attrs">取得属性：商品種別・シミュレーション入力値（借入額・期間・金利）・閲覧プラン</span>
+    </div>
+    <table class="uc-table">
+      <thead>
+        <tr>
+          <th style="width:160px;">ユースケース</th>
+          <th style="width:200px;">取得データ × トリガー</th>
+          <th>配信内容</th>
+          <th style="width:160px;">期待CV</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>シミュレーション離脱<br>→パーソナル提案</strong></td>
+          <td>
+            <div class="trigger-chip">シミュレーター入力→離脱</div>
+            借入額・期間をSET_ATTRIBUTESで保存
+          </td>
+          <td>「月々◯万円のご返済でご検討できます」と<strong>入力値に基づいたプラン画像</strong>を配信。汎用訴求でなく自分ごと化された内容でCVを後押し</td>
+          <td class="cv-strong">申込・問い合わせ<br><span style="font-weight:400;color:#555;font-size:10px;">入力済み＝検討度が高い</span></td>
+        </tr>
+        <tr>
+          <td><strong>保険比較 カタログ配信</strong></td>
+          <td>
+            <div class="trigger-chip">保険詳細ページ閲覧→未申込</div>
+            閲覧した保険種別・プランを取得
+          </td>
+          <td>「ご覧になったプランと比較できます」と<strong>類似プラン画像一覧</strong>を配信。比較検討を後押しし申込へ誘導</td>
+          <td class="cv-strong">資料請求・申込<br><span style="font-weight:400;color:#555;font-size:10px;">比較訴求で意思決定を加速</span></td>
+        </tr>
+        <tr>
+          <td><strong>ローン申込 フォーム落ちフォロー</strong></td>
+          <td>
+            <div class="trigger-chip">申込フォーム閲覧→未完了</div>
+            商品種別・入力途中データを取得
+          </td>
+          <td>「申込の続きはこちら」+<strong>該当ローン商品画像</strong>でリマインド。入力途中で離脱したユーザーを取り戻す</td>
+          <td class="cv-strong">申込完了<br><span style="font-weight:400;color:#555;font-size:10px;">最もCVに近い離脱ポイント</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ROADMAP -->
+  <div class="roadmap">
+    <div class="roadmap-title">導入ロードマップ — 優先順位の考え方</div>
+    <div class="roadmap-grid">
+      <div class="roadmap-col" style="border-color:#c0392b;">
+        <div class="roadmap-col-title" style="color:#c0392b;">① まず着手（CV近い離脱ポイント）</div>
+        <div class="roadmap-item"><span class="roadmap-dot dot-now"></span>カート落ちレコメンド（EC）</div>
+        <div class="roadmap-item"><span class="roadmap-dot dot-now"></span>内見予約 離脱リマインド（不動産）</div>
+        <div class="roadmap-item"><span class="roadmap-dot dot-now"></span>ローン申込 フォーム落ちフォロー（金融）</div>
+        <div class="roadmap-item"><span class="roadmap-dot dot-now"></span>求人カート落ち（人材）</div>
+      </div>
+      <div class="roadmap-col" style="border-color:#2563a0;">
+        <div class="roadmap-col-title" style="color:#2563a0;">② 次フェーズ（関心データを活用）</div>
+        <div class="roadmap-item"><span class="roadmap-dot dot-next"></span>在庫切れ→再入荷通知（EC）</div>
+        <div class="roadmap-item"><span class="roadmap-dot dot-next"></span>応募締切前リマインド（人材）</div>
+        <div class="roadmap-item"><span class="roadmap-dot dot-next"></span>同条件の新着物件カタログ（不動産）</div>
+        <div class="roadmap-item"><span class="roadmap-dot dot-next"></span>保険比較 カタログ配信（金融）</div>
+      </div>
+      <div class="roadmap-col" style="border-color:#7c3aed;">
+        <div class="roadmap-col-title" style="color:#7c3aed;">③ 高度活用（蓄積データ×クロス訴求）</div>
+        <div class="roadmap-item"><span class="roadmap-dot dot-future"></span>価格帯別 売れ筋レコメンド（EC）</div>
+        <div class="roadmap-item"><span class="roadmap-dot dot-future"></span>コーデ・セット提案（EC）</div>
+        <div class="roadmap-item"><span class="roadmap-dot dot-future"></span>エリア×職種 新着通知（人材）</div>
+        <div class="roadmap-item"><span class="roadmap-dot dot-future"></span>賃貸→売買 クロスレコメンド（不動産）</div>
+        <div class="roadmap-item"><span class="roadmap-dot dot-future"></span>シミュレーション離脱→パーソナル提案（金融）</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    ⚠️ Advanced Measurement × Catalog Recommendationは現在PoC中の機能です。利用可能なタイミング・対応業種・データ取得方法の詳細は弊社担当者までお問い合わせください。
+  </div>
+
+</div>
+</body>
+</html>
