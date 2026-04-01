@@ -9,6 +9,527 @@
   :root {
     --bg-primary: #ffffff;
     --bg-secondary: #f5f5f3;
+    --text-primary: #1a1a18;
+    --text-secondary: #6b6b67;
+    --text-tertiary: #9b9b96;
+    --text-info: #185fa5;
+    --border: rgba(0,0,0,0.12);
+    --border-md: rgba(0,0,0,0.22);
+    --teal: #1d9e75;
+    --teal-light: #e1f5ee;
+    --teal-dark: #0f6e56;
+    --teal-darker: #085041;
+    --blue-light: #e6f1fb;
+    --amber-light: #faeeda;
+    --amber-mid: #ef9f27;
+    --amber-dark: #854f0b;
+    --amber-darker: #633806;
+    --amber-deep: #412402;
+    --purple-light: #eeedfe;
+    --purple-dark: #3c3489;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-primary: #1e1e1c;
+      --bg-secondary: #2a2a28;
+      --text-primary: #f0ede8;
+      --text-secondary: #a8a8a2;
+      --text-tertiary: #6e6e6a;
+      --text-info: #85b7eb;
+      --border: rgba(255,255,255,0.1);
+      --border-md: rgba(255,255,255,0.2);
+      --teal-light: #04342c;
+      --teal-dark: #9fe1cb;
+      --teal-darker: #5dcaa5;
+      --blue-light: #042c53;
+      --amber-light: #412402;
+      --amber-mid: #ba7517;
+      --amber-dark: #fac775;
+      --amber-darker: #fac775;
+      --amber-deep: #faeeda;
+      --purple-light: #26215c;
+      --purple-dark: #afa9ec;
+    }
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif; background: var(--bg-primary); color: var(--text-primary); }
+  .page { max-width: 920px; margin: 0 auto; padding: 2rem 1.5rem; }
+  .hero h1 { font-size: 20px; font-weight: 500; margin-bottom: 4px; }
+  .hero p { font-size: 13px; color: var(--text-secondary); margin-bottom: 1.5rem; }
+  .tab-row { display: flex; gap: 4px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .tab { padding: 6px 14px; border-radius: var(--radius-md); font-size: 12px; cursor: pointer; border: 0.5px solid var(--border); color: var(--text-secondary); background: transparent; transition: all .15s; }
+  .tab.active { background: var(--bg-secondary); color: var(--text-primary); border-color: var(--border-md); font-weight: 500; }
+  .hidden { display: none; }
+  .sec-label { font-size: 11px; font-weight: 500; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 1rem; }
+
+  /* flow */
+  .flow-wrap { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem; }
+  .timeline { display: flex; align-items: flex-start; }
+  .step { flex: 1; display: flex; flex-direction: column; align-items: center; cursor: pointer; position: relative; }
+  .step:not(:last-child)::after { content: ''; position: absolute; top: 22px; left: 50%; width: 100%; height: 1.5px; background: var(--border); z-index: 0; }
+  .step.on:not(:last-child)::after { background: var(--teal); }
+  .step-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 17px; border: 2px solid var(--border); background: var(--bg-primary); z-index: 1; transition: all .2s; }
+  .step.on .step-icon { border-color: var(--teal); background: var(--teal-light); }
+  .step-name { font-size: 10px; color: var(--text-secondary); margin-top: 6px; text-align: center; line-height: 1.4; }
+  .step.on .step-name { color: var(--teal-dark); font-weight: 500; }
+
+  /* channel cards */
+  .ch-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 1.5rem; }
+  .ch-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1rem; cursor: pointer; transition: border-color .15s; }
+  .ch-card:hover { border-color: var(--border-md); }
+  .ch-card.sel { border: 1.5px solid var(--teal); }
+  .ch-num { font-size: 10px; font-weight: 500; color: var(--text-tertiary); margin-bottom: 6px; }
+  .ch-head { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+  .ch-ico { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .ico-line { background: var(--teal-light); }
+  .ico-sms { background: var(--blue-light); }
+  .ico-mail { background: var(--amber-light); }
+  .ico-call { background: var(--purple-light); }
+  .ch-title { font-size: 12px; font-weight: 500; color: var(--text-primary); }
+  .ch-bars { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+  .bar-row { display: flex; align-items: center; gap: 6px; }
+  .bar-lbl { font-size: 10px; color: var(--text-tertiary); width: 34px; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; }
+  .fill-teal { background: var(--teal); }
+  .fill-blue { background: #378add; }
+  .fill-amber { background: #ba7517; }
+  .fill-purple { background: #7f77dd; }
+  .bar-val { font-size: 10px; color: var(--text-secondary); width: 24px; text-align: right; flex-shrink: 0; }
+  .ch-timing { font-size: 10px; color: var(--text-tertiary); padding-top: 7px; border-top: 0.5px solid var(--border); }
+
+  /* metrics */
+  .metrics-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 1.5rem; }
+  .metric { background: var(--bg-secondary); border-radius: var(--radius-md); padding: .8rem 1rem; }
+  .metric-lbl { font-size: 11px; color: var(--text-tertiary); margin-bottom: 3px; }
+  .metric-val { font-size: 22px; font-weight: 500; }
+  .metric-sub { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* poc */
+  .note-box { background: var(--amber-light); border-radius: var(--radius-md); padding: .9rem 1rem; margin-bottom: 1.5rem; border: 0.5px solid var(--amber-mid); }
+  .note-box p { font-size: 12px; color: var(--amber-deep); line-height: 1.6; }
+  .note-box strong { font-weight: 500; }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+  .cmp-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
+  .cmp-card.full { border: 2px solid var(--teal); }
+  .cmp-badge { font-size: 10px; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 8px; }
+  .bdg-poc { background: var(--amber-light); color: var(--amber-darker); }
+  .bdg-full { background: var(--teal-light); color: var(--teal-dark); }
+  .cmp-title { font-size: 14px; font-weight: 500; margin-bottom: 10px; }
+  .cmp-row { display: flex; gap: 8px; padding: 6px 0; border-bottom: 0.5px solid var(--border); align-items: flex-start; }
+  .cmp-row:last-child { border-bottom: none; }
+  .cmp-key { font-size: 11px; color: var(--text-tertiary); min-width: 90px; flex-shrink: 0; padding-top: 1px; }
+  .cmp-val { font-size: 11px; color: var(--text-primary); line-height: 1.55; }
+  .cmp-val.warn { color: var(--amber-dark); }
+  .poc-flow-steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem; }
+  .pfs { display: flex; gap: 12px; align-items: flex-start; background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: .9rem 1rem; }
+  .pfs-num { width: 24px; height: 24px; border-radius: 50%; background: var(--amber-light); color: var(--amber-darker); font-size: 11px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .pfs-body { flex: 1; }
+  .pfs-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .pfs-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.55; }
+  .pfs-tag { font-size: 10px; background: var(--bg-secondary); color: var(--text-secondary); padding: 2px 7px; border-radius: 4px; display: inline-block; margin-top: 5px; }
+  .pfs-tag.warn { background: var(--amber-light); color: var(--amber-dark); }
+
+  /* preview */
+  .prev-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+  .prev-col-lbl { font-size: 11px; font-weight: 500; color: var(--text-secondary); margin-bottom: 8px; text-align: center; }
+  .phone { background: var(--bg-primary); border-radius: 16px; border: 1.5px solid var(--border-md); overflow: hidden; max-width: 180px; margin: 0 auto; }
+  .phone-bar { background: #111; height: 24px; display: flex; align-items: center; justify-content: center; }
+  .phone-bar span { color: #fff; font-size: 10px; opacity: .7; }
+  .p-pad { padding: 10px; }
+  .p-label { font-size: 9px; color: var(--text-tertiary); text-align: center; margin-bottom: 7px; }
+  .bubble-in { border-radius: 4px 10px 10px 10px; padding: 8px 10px; font-size: 10px; line-height: 1.5; max-width: 90%; margin-bottom: 5px; }
+  .bubble-out { border-radius: 10px 4px 10px 10px; padding: 8px 10px; font-size: 10px; line-height: 1.5; max-width: 80%; margin-left: auto; background: var(--bg-secondary); margin-bottom: 5px; }
+  .b-line { background: var(--teal-light); color: var(--teal-darker); }
+  .b-sms { background: var(--blue-light); color: #0c447c; }
+  .b-link { color: var(--text-info); text-decoration: underline; font-size: 9px; display: block; margin-top: 3px; }
+  .mail-wrap { padding: 10px; }
+  .mail-from { font-size: 9px; color: var(--text-tertiary); margin-bottom: 5px; }
+  .mail-subject { font-size: 10px; font-weight: 500; margin-bottom: 7px; }
+  .mail-body { font-size: 10px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 7px; }
+  .mail-btn { display: block; background: var(--teal); color: #fff; font-size: 10px; text-align: center; padding: 6px; border-radius: 5px; text-decoration: none; }
+  .call-wrap { padding: 14px; text-align: center; }
+  .call-big { font-size: 28px; margin-bottom: 6px; }
+  .call-ttl { font-size: 11px; font-weight: 500; margin-bottom: 4px; }
+  .call-sub { font-size: 10px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px; }
+  .call-steps { text-align: left; background: var(--bg-secondary); border-radius: 6px; padding: 8px 10px; }
+  .cs { font-size: 10px; color: var(--text-secondary); padding: 2px 0; display: flex; gap: 5px; }
+  .csn { font-size: 9px; font-weight: 500; color: var(--amber-dark); flex-shrink: 0; }
+
+  /* pricing */
+  .struct-box { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem; }
+  .str-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 0.5px solid var(--border); }
+  .str-row:last-child { border-bottom: none; }
+  .str-ico { width: 32px; height: 32px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .str-body { flex: 1; }
+  .str-title { font-size: 13px; font-weight: 500; }
+  .str-desc { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+  .str-badge { font-size: 10px; padding: 3px 9px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
+  .bdg-fix { background: var(--teal-light); color: var(--teal-dark); }
+  .bdg-var { background: var(--blue-light); color: var(--text-info); }
+  .p-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
+  .pc { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
+  .pc.rec { border: 2px solid var(--teal); }
+  .pc.poc-plan { border: 2px solid var(--amber-mid); }
+  .rec-bdg { font-size: 10px; background: var(--teal-light); color: var(--teal-dark); padding: 2px 7px; border-radius: 4px; display: inline-block; margin-bottom: 7px; }
+  .poc-bdg { font-size: 10px; background: var(--amber-light); color: var(--amber-darker); padding: 2px 7px; border-radius: 4px; display: inline-block; margin-bottom: 7px; }
+  .pc-name { font-size: 14px; font-weight: 500; margin-bottom: 5px; }
+  .pc-price { font-size: 24px; font-weight: 500; line-height: 1; }
+  .pc-price span { font-size: 12px; font-weight: 400; color: var(--text-secondary); }
+  .pc-sms { font-size: 11px; color: var(--text-secondary); margin-top: 4px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 0.5px solid var(--border); }
+  .pc-sms strong { font-weight: 500; color: var(--text-primary); }
+  .pc-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px; }
+  .feat { font-size: 11px; color: var(--text-secondary); padding: 3px 0; display: flex; gap: 6px; align-items: baseline; }
+  .feat::before { content: '✓'; color: var(--teal); font-size: 10px; flex-shrink: 0; }
+  .feat.dim { color: var(--text-tertiary); }
+  .feat.dim::before { content: '–'; color: var(--text-tertiary); }
+  .feat.warn::before { content: '✓'; color: #ba7517; }
+  .sim-box { background: var(--bg-secondary); border-radius: var(--radius-lg); padding: 1.25rem; }
+  .sim-row { display: flex; align-items: center; gap: 12px; margin-bottom: 9px; }
+  .sim-lbl { font-size: 12px; color: var(--text-secondary); min-width: 180px; }
+  .sim-val { font-size: 12px; font-weight: 500; min-width: 80px; text-align: right; }
+  .sim-result { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: .9rem; margin-top: 10px; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+  .sm { text-align: center; }
+  .sm-lbl { font-size: 10px; color: var(--text-tertiary); margin-bottom: 3px; }
+  .sm-val { font-size: 17px; font-weight: 500; }
+  .sm-val.acc { color: var(--teal-dark); }
+
+  @media (max-width: 600px) {
+    .ch-grid, .metrics-row, .p-grid, .prev-grid, .compare-grid { grid-template-columns: 1fr; }
+    .sim-lbl { min-width: 120px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hero">
+    <h1>mico カゴ落ち完全対応パッケージ</h1>
+    <p>反応率の高いチャネルから順にアタック。無反応者を次のチャネルへエスカレーション。</p>
+  </div>
+
+  <div class="tab-row">
+    <button class="tab active" onclick="showTab('flow')">フロー</button>
+    <button class="tab" onclick="showTab('poc')">PoC前提</button>
+    <button class="tab" onclick="showTab('preview')">メッセージプレビュー</button>
+    <button class="tab" onclick="showTab('pricing')">料金プラン</button>
+  </div>
+
+  <!-- TAB: FLOW -->
+  <div id="tab-flow">
+    <div class="flow-wrap">
+      <div class="sec-label">カゴ落ち検知 → 回収フロー（無反応順にエスカレーション）</div>
+      <div class="timeline">
+        <div class="step on" onclick="selectStep(0)"><div class="step-icon">🛒</div><div class="step-name">カゴ落ち<br>検知</div></div>
+        <div class="step on" onclick="selectStep(1)"><div class="step-icon">🟩</div><div class="step-name">① LINE<br>配信</div></div>
+        <div class="step" onclick="selectStep(2)"><div class="step-icon">💬</div><div class="step-name">② SMS<br>配信</div></div>
+        <div class="step" onclick="selectStep(3)"><div class="step-icon">✉️</div><div class="step-name">③ メール<br>配信</div></div>
+        <div class="step" onclick="selectStep(4)"><div class="step-icon">📞</div><div class="step-name">④ AIコール<br>発信</div></div>
+        <div class="step" onclick="selectStep(5)"><div class="step-icon">✅</div><div class="step-name">購入<br>完了</div></div>
+      </div>
+    </div>
+    <div class="ch-grid">
+      <div class="ch-card sel" id="ch-line" onclick="selCard('line')">
+        <div class="ch-num">チャネル ①</div>
+        <div class="ch-head"><div class="ch-ico ico-line">🟩</div><div class="ch-title">LINE</div></div>
+        <div class="ch-bars">
+          <div class="bar-row"><span class="bar-lbl">到達率</span><div class="bar-track"><div class="bar-fill fill-teal" style="width:50%"></div></div><span class="bar-val">低</span></div>
+          <div class="bar-row"><span class="bar-lbl">開封率</span><div class="bar-track"><div class="bar-fill fill-teal" style="width:90%"></div></div><span class="bar-val">高</span></div>
+          <div class="bar-row"><span class="bar-lbl">反応率</span><div class="bar-track"><div class="bar-fill fill-teal" style="width:90%"></div></div><span class="bar-val">高</span></div>
+        </div>
+        <div class="ch-timing">友だち登録済み顧客に即時配信</div>
+      </div>
+      <div class="ch-card" id="ch-sms" onclick="selCard('sms')">
+        <div class="ch-num">チャネル ②</div>
+        <div class="ch-head"><div class="ch-ico ico-sms">💬</div><div class="ch-title">SMS</div></div>
+        <div class="ch-bars">
+          <div class="bar-row"><span class="bar-lbl">到達率</span><div class="bar-track"><div class="bar-fill fill-blue" style="width:90%"></div></div><span class="bar-val">高</span></div>
+          <div class="bar-row"><span class="bar-lbl">開封率</span><div class="bar-track"><div class="bar-fill fill-blue" style="width:90%"></div></div><span class="bar-val">高</span></div>
+          <div class="bar-row"><span class="bar-lbl">反応率</span><div class="bar-track"><div class="bar-fill fill-blue" style="width:60%"></div></div><span class="bar-val">中</span></div>
+        </div>
+        <div class="ch-timing">LINE未反応から1時間後</div>
+      </div>
+      <div class="ch-card" id="ch-mail" onclick="selCard('mail')">
+        <div class="ch-num">チャネル ③</div>
+        <div class="ch-head"><div class="ch-ico ico-mail">✉️</div><div class="ch-title">メール</div></div>
+        <div class="ch-bars">
+          <div class="bar-row"><span class="bar-lbl">到達率</span><div class="bar-track"><div class="bar-fill fill-amber" style="width:90%"></div></div><span class="bar-val">高</span></div>
+          <div class="bar-row"><span class="bar-lbl">開封率</span><div class="bar-track"><div class="bar-fill fill-amber" style="width:30%"></div></div><span class="bar-val">低</span></div>
+          <div class="bar-row"><span class="bar-lbl">反応率</span><div class="bar-track"><div class="bar-fill fill-amber" style="width:20%"></div></div><span class="bar-val">低</span></div>
+        </div>
+        <div class="ch-timing">SMS未反応から3時間後</div>
+      </div>
+      <div class="ch-card" id="ch-call" onclick="selCard('call')">
+        <div class="ch-num">チャネル ④</div>
+        <div class="ch-head"><div class="ch-ico ico-call">📞</div><div class="ch-title">AIコール</div></div>
+        <div class="ch-bars">
+          <div class="bar-row"><span class="bar-lbl">到達率</span><div class="bar-track"><div class="bar-fill fill-purple" style="width:70%"></div></div><span class="bar-val">中</span></div>
+          <div class="bar-row"><span class="bar-lbl">開封率</span><div class="bar-track"><div class="bar-fill fill-purple" style="width:70%"></div></div><span class="bar-val">中</span></div>
+          <div class="bar-row"><span class="bar-lbl">反応率</span><div class="bar-track"><div class="bar-fill fill-purple" style="width:40%"></div></div><span class="bar-val">中低</span></div>
+        </div>
+        <div class="ch-timing">メール未反応から24時間後</div>
+      </div>
+    </div>
+    <div class="metrics-row">
+      <div class="metric"><div class="metric-lbl">カバレッジ</div><div class="metric-val">4ch</div><div class="metric-sub">LINE・SMS・メール・Call</div></div>
+      <div class="metric"><div class="metric-lbl">LINE開封率</div><div class="metric-val">60%+</div><div class="metric-sub">登録済み顧客</div></div>
+      <div class="metric"><div class="metric-lbl">SMS開封率</div><div class="metric-val">90%+</div><div class="metric-sub">メール比 4〜5倍</div></div>
+      <div class="metric"><div class="metric-lbl">エスカレーション</div><div class="metric-val">自動</div><div class="metric-sub">無反応で次チャネルへ</div></div>
+    </div>
+  </div>
+
+  <!-- TAB: POC -->
+  <div id="tab-poc" class="hidden">
+    <div class="note-box">
+      <p><strong>PoC前提：</strong>顧客DBに電話番号・メールアドレス・カゴ落ちイベントが保有されていることが条件。自動エスカレーションではなく、担当者が都度手動で配信設定を行いチャネルをまたいで対応する形。</p>
+    </div>
+
+    <div class="sec-label">PoC vs 本番運用の比較</div>
+    <div class="compare-grid">
+      <div class="cmp-card">
+        <span class="cmp-badge bdg-poc">PoC（手動運用）</span>
+        <div class="cmp-title">手動オペレーションで検証</div>
+        <div class="cmp-row"><span class="cmp-key">エスカレーション</span><span class="cmp-val warn">手動。未クリック者を都度抽出して次チャネルへ設定</span></div>
+        <div class="cmp-row"><span class="cmp-key">LINE配信</span><span class="cmp-val">micoの既存機能で対応可</span></div>
+        <div class="cmp-row"><span class="cmp-key">SMS配信</span><span class="cmp-val">LINEクリックなし顧客を手動抽出して送信</span></div>
+        <div class="cmp-row"><span class="cmp-key">メール配信</span><span class="cmp-val warn">クリックイベント取得は使用するメールシステムに依存</span></div>
+        <div class="cmp-row"><span class="cmp-key">AIコール</span><span class="cmp-val">手動で発信リスト設定</span></div>
+        <div class="cmp-row"><span class="cmp-key">前提データ</span><span class="cmp-val">顧客DB内に電話番号・メールアドレス・カゴ落ちイベントが必要</span></div>
+      </div>
+      <div class="cmp-card full">
+        <span class="cmp-badge bdg-full">本番（自動運用）</span>
+        <div class="cmp-title">全チャネル自動エスカレーション</div>
+        <div class="cmp-row"><span class="cmp-key">エスカレーション</span><span class="cmp-val">自動。クリックなしを検知して次チャネルへ自動移行</span></div>
+        <div class="cmp-row"><span class="cmp-key">LINE配信</span><span class="cmp-val">カゴ落ち検知と同時に自動配信</span></div>
+        <div class="cmp-row"><span class="cmp-key">SMS配信</span><span class="cmp-val">LINE未反応から1時間後に自動送信</span></div>
+        <div class="cmp-row"><span class="cmp-key">メール配信</span><span class="cmp-val">SMS未反応から3時間後に自動送信</span></div>
+        <div class="cmp-row"><span class="cmp-key">AIコール</span><span class="cmp-val">メール未反応から24時間後に自動発信</span></div>
+        <div class="cmp-row"><span class="cmp-key">前提データ</span><span class="cmp-val">ECシステムとのAPI連携が必要</span></div>
+      </div>
+    </div>
+
+    <div class="sec-label">PoCの手動オペレーションフロー</div>
+    <div class="poc-flow-steps">
+      <div class="pfs">
+        <div class="pfs-num">1</div>
+        <div class="pfs-body">
+          <div class="pfs-title">カゴ落ちリストをDBから抽出</div>
+          <div class="pfs-desc">顧客DBのカゴ落ちイベントをもとに、電話番号・メールアドレスを持つ対象者リストを作成する。</div>
+          <span class="pfs-tag">前提：DB側にカゴ落ちイベントが保有されていること</span>
+        </div>
+      </div>
+      <div class="pfs">
+        <div class="pfs-num">2</div>
+        <div class="pfs-body">
+          <div class="pfs-title">① LINE配信を手動設定・送信</div>
+          <div class="pfs-desc">友だち登録済み顧客へLINEでカゴ落ちメッセージを配信。micoの既存機能で対応可能。</div>
+          <span class="pfs-tag">micoで対応可</span>
+        </div>
+      </div>
+      <div class="pfs">
+        <div class="pfs-num">3</div>
+        <div class="pfs-body">
+          <div class="pfs-title">LINEのクリックなし顧客を抽出 → ② SMS送信</div>
+          <div class="pfs-desc">LINE配信後、未クリック者を手動で絞り込んでSMSを送信。カートリンクとLINE友だち登録URLを記載。</div>
+          <span class="pfs-tag">micoで対応可</span>
+        </div>
+      </div>
+      <div class="pfs">
+        <div class="pfs-num">4</div>
+        <div class="pfs-body">
+          <div class="pfs-title">SMSのクリックなし顧客を抽出 → ③ メール送信</div>
+          <div class="pfs-desc">SMS未反応者へメール配信。クリックイベントの取得可否は利用するメールシステムに依存するため事前確認が必要。</div>
+          <span class="pfs-tag warn">メールシステムによりクリック計測に差異あり</span>
+        </div>
+      </div>
+      <div class="pfs">
+        <div class="pfs-num">5</div>
+        <div class="pfs-body">
+          <div class="pfs-title">全チャネル未反応者 → ④ AIコール発信リストを手動設定</div>
+          <div class="pfs-desc">LINE・SMS・メールいずれにも反応がなかった顧客の電話番号リストをmicoのAIコール機能にセットして発信。</div>
+          <span class="pfs-tag">micoで対応可</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: PREVIEW -->
+  <div id="tab-preview" class="hidden">
+    <div class="prev-grid">
+      <div>
+        <div class="prev-col-lbl">① LINE</div>
+        <div class="phone">
+          <div class="phone-bar"><span>LINE</span></div>
+          <div class="p-pad">
+            <div class="p-label">mico AI · 公式</div>
+            <div class="bubble-in b-line">田中様、カートに「○○クリーム」が残っています🛒<br><br>ご不明な点はありますか？お気軽にご相談ください。<a class="b-link" href="#">▶ カートを確認する</a></div>
+            <div class="bubble-out">どのくらいで届きますか？</div>
+            <div class="bubble-in b-line">通常2〜3営業日でお届けします📦 お急ぎ便もございます！</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="prev-col-lbl">② SMS</div>
+        <div class="phone">
+          <div class="phone-bar"><span>SMS</span></div>
+          <div class="p-pad">
+            <div class="p-label">mico EC より</div>
+            <div class="bubble-in b-sms">【カートに商品が残っています】田中様、「○○クリーム」がカートに入ったままです。在庫に限りがございます。<a class="b-link" href="#">▶ cart.example.com/c/abc</a><span style="font-size:9px;display:block;margin-top:3px;color:#185fa5">💬 LINE相談 → lin.ee/xxxx</span></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="prev-col-lbl">③ メール</div>
+        <div class="phone">
+          <div class="phone-bar"><span>メール</span></div>
+          <div class="mail-wrap">
+            <div class="mail-from">from: shop@example.com</div>
+            <div class="mail-subject">カートに商品が残っています</div>
+            <div class="mail-body">田中様<br><br>「○○クリーム」がカートに残っています。在庫に限りがございますので、お早めにご確認ください。</div>
+            <a class="mail-btn" href="#">カートを確認する</a>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="prev-col-lbl">④ AIコール</div>
+        <div class="phone">
+          <div class="phone-bar"><span>着信中...</span></div>
+          <div class="call-wrap">
+            <div class="call-big">📞</div>
+            <div class="call-ttl">AI自動発信</div>
+            <div class="call-sub">全チャネル未反応の顧客に自動コール。自然な日本語で購入をサポート。</div>
+            <div class="call-steps">
+              <div class="cs"><span class="csn">1</span>カート内容を確認・案内</div>
+              <div class="cs"><span class="csn">2</span>購入しない理由をヒアリング</div>
+              <div class="cs"><span class="csn">3</span>疑問点にAIが即答</div>
+              <div class="cs"><span class="csn">4</span>希望時に担当者へ転送</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: PRICING -->
+  <div id="tab-pricing" class="hidden">
+    <div class="sec-label">料金構造</div>
+    <div class="struct-box">
+      <div class="str-row">
+        <div class="str-ico ico-line">📦</div>
+        <div class="str-body"><div class="str-title">パッケージ月額（固定）</div><div class="str-desc">LINE AIチャット・AIコール・メール配信・管理画面・URL発行を含む</div></div>
+        <span class="str-badge bdg-fix">月額固定</span>
+      </div>
+      <div class="str-row">
+        <div class="str-ico ico-sms">💬</div>
+        <div class="str-body"><div class="str-title">SMS配信料（従量）</div><div class="str-desc">送信した通数に応じて課金　〜15円/通</div></div>
+        <span class="str-badge bdg-var">従量課金</span>
+      </div>
+    </div>
+
+    <div class="sec-label">プランラインナップ</div>
+    <div class="p-grid">
+      <div class="pc poc-plan">
+        <div class="poc-bdg">PoC向け</div>
+        <div class="pc-name">PoC / 手動オペレーション</div>
+        <div class="pc-price" style="font-size:17px">要お見積もり</div>
+        <div class="pc-sms">SMS <strong>〜15円</strong>/通（従量）</div>
+        <div class="pc-desc">顧客DBからの手動抽出・配信設定で4チャネルを検証。自動化前のROI確認に最適。</div>
+        <div class="feat warn">LINE配信（手動）</div>
+        <div class="feat warn">SMS配信（手動）</div>
+        <div class="feat warn">メール配信（手動・計測はシステム依存）</div>
+        <div class="feat warn">AIコール（手動リスト設定）</div>
+        <div class="feat dim">自動エスカレーション</div>
+      </div>
+      <div class="pc rec">
+        <div class="rec-bdg">おすすめ</div>
+        <div class="pc-name">スタンダード</div>
+        <div class="pc-price">¥98,000<span>/月</span></div>
+        <div class="pc-sms">＋SMS <strong>〜15円</strong>/通</div>
+        <div class="pc-desc">4チャネル全対応。無反応者を自動エスカレーション。</div>
+        <div class="feat">SMS自動配信</div>
+        <div class="feat">メール自動配信</div>
+        <div class="feat">LINE友だち登録URL発行</div>
+        <div class="feat">LINE AIチャット対応</div>
+        <div class="feat">AIコール自動発信</div>
+      </div>
+      <div class="pc">
+        <div class="pc-name">エンタープライズ</div>
+        <div class="pc-price" style="font-size:17px">要お見積もり</div>
+        <div class="pc-sms">SMS単価は個別交渉</div>
+        <div class="pc-desc">大規模EC・複数ブランド・CRM連携が必要な企業向け</div>
+        <div class="feat">スタンダードの全機能</div>
+        <div class="feat">複数EC連携</div>
+        <div class="feat">CRM / SFA連携</div>
+        <div class="feat">専任CSM</div>
+        <div class="feat">SLA保証</div>
+      </div>
+    </div>
+
+    <div class="sec-label">月額コストシミュレーター</div>
+    <div class="sim-box">
+      <div class="sim-row">
+        <div class="sim-lbl">月間カゴ落ち件数</div>
+        <input type="range" min="100" max="5000" step="100" value="1000" id="sl-a" oninput="calc()" style="flex:1;accent-color:var(--teal)">
+        <div class="sim-val" id="o-a">1,000件</div>
+      </div>
+      <div class="sim-row">
+        <div class="sim-lbl">SMS配信率（カゴ落ちに対して）</div>
+        <input type="range" min="10" max="100" step="5" value="70" id="sl-r" oninput="calc()" style="flex:1;accent-color:var(--teal)">
+        <div class="sim-val" id="o-r">70%</div>
+      </div>
+      <div class="sim-row">
+        <div class="sim-lbl">配信シーケンス数</div>
+        <input type="range" min="1" max="3" step="1" value="2" id="sl-s" oninput="calc()" style="flex:1;accent-color:var(--teal)">
+        <div class="sim-val" id="o-s">2通</div>
+      </div>
+      <div class="sim-result">
+        <div class="sm"><div class="sm-lbl">月間SMS送信数</div><div class="sm-val" id="o-cnt">1,400通</div></div>
+        <div class="sm"><div class="sm-lbl">SMS従量費用</div><div class="sm-val" id="o-cost">¥21,000</div></div>
+        <div class="sm"><div class="sm-lbl">月額合計（スタンダード）</div><div class="sm-val acc" id="o-total">¥119,000</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(n) {
+  ['flow','poc','preview','pricing'].forEach(t => document.getElementById('tab-' + t).classList.toggle('hidden', t !== n));
+  document.querySelectorAll('.tab').forEach((b, i) => b.classList.toggle('active', ['flow','poc','preview','pricing'][i] === n));
+}
+function selCard(t) {
+  ['line','sms','mail','call'].forEach(c => document.getElementById('ch-' + c).classList.toggle('sel', c === t));
+}
+function selectStep(i) {
+  document.querySelectorAll('.step').forEach((s, j) => s.classList.toggle('on', j <= i));
+}
+function fmt(n) { return n.toLocaleString('ja-JP'); }
+function calc() {
+  var a = parseInt(document.getElementById('sl-a').value);
+  var r = parseInt(document.getElementById('sl-r').value);
+  var s = parseInt(document.getElementById('sl-s').value);
+  document.getElementById('o-a').textContent = fmt(a) + '件';
+  document.getElementById('o-r').textContent = r + '%';
+  document.getElementById('o-s').textContent = s + '通';
+  var cnt = Math.round(a * (r / 100) * s);
+  var cost = cnt * 15;
+  document.getElementById('o-cnt').textContent = fmt(cnt) + '通';
+  document.getElementById('o-cost').textContent = '¥' + fmt(cost);
+  document.getElementById('o-total').textContent = '¥' + fmt(98000 + cost);
+}
+calc();
+</script>
+</body>
+</html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mico カゴ落ち完全対応パッケージ</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f5f3;
     --bg-info: #e6f1fb;
     --text-primary: #1a1a18;
     --text-secondary: #6b6b67;
