@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LINE Mini App — 求職者マイページ デモ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans JP',sans-serif;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+
+.demo-wrapper{display:flex;gap:48px;align-items:flex-start;justify-content:center;flex-wrap:wrap;}
+
+/* LEFT PANEL */
+.demo-info{max-width:280px;color:#fff;}
+.demo-logo{font-size:13px;letter-spacing:0.15em;color:rgba(200,255,0,0.8);text-transform:uppercase;font-weight:700;margin-bottom:20px;}
+.demo-title{font-size:26px;font-weight:700;line-height:1.3;margin-bottom:12px;}
+.demo-title span{color:#C8FF00;}
+.demo-desc{font-size:13px;color:rgba(255,255,255,0.6);line-height:1.7;margin-bottom:24px;}
+.demo-steps{display:flex;flex-direction:column;gap:10px;}
+.demo-step{display:flex;gap:10px;align-items:flex-start;}
+.step-num{width:22px;height:22px;border-radius:50%;background:#C8FF00;color:#1a1a2e;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-text{font-size:12px;color:rgba(255,255,255,0.7);line-height:1.5;}
+.demo-badge{display:inline-block;background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.3);color:#C8FF00;font-size:10px;padding:4px 12px;border-radius:12px;margin-top:20px;}
+
+/* PHONE */
+.phone-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.phone-label{font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:0.08em;}
+.phone{width:340px;height:680px;background:#f5f5f5;border-radius:44px;overflow:hidden;border:10px solid #0d0d1a;box-shadow:0 32px 80px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.05);display:flex;flex-direction:column;position:relative;}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:28px;background:#0d0d1a;border-radius:0 0 20px 20px;z-index:10;}
+
+.status-bar{background:#06c755;padding:32px 16px 8px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.status-time{font-size:12px;font-weight:700;color:#fff;}
+.status-icons{font-size:11px;color:#fff;}
+.line-header{background:#06c755;padding:10px 16px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+.line-back{color:#fff;font-size:20px;cursor:pointer;user-select:none;}
+.line-title{font-size:15px;font-weight:700;color:#fff;flex:1;}
+.line-icons{display:flex;gap:14px;color:#fff;font-size:15px;cursor:pointer;}
+
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;background:#f8f8f8;}
+.screen::-webkit-scrollbar{width:3px;}
+.screen::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.1);border-radius:2px;}
+
+.nav-tabs{display:flex;background:#fff;border-top:1px solid #e8e8e8;flex-shrink:0;padding-bottom:4px;}
+.nav-tab{flex:1;padding:8px 4px 10px;text-align:center;cursor:pointer;font-size:9px;color:#aaa;border-top:2px solid transparent;transition:all 0.2s;user-select:none;}
+.nav-tab.active{color:#06c755;border-top-color:#06c755;font-weight:700;}
+.nav-tab-icon{font-size:20px;display:block;margin-bottom:2px;}
+
+.screen-content{display:none;}
+.screen-content.active{display:block;}
+
+/* HOME */
+.home-hero{background:linear-gradient(135deg,#06c755 0%,#04a34f 100%);padding:18px 16px 20px;}
+.home-greet{font-size:12px;color:rgba(255,255,255,0.8);margin-bottom:3px;}
+.home-name{font-size:18px;font-weight:700;color:#fff;margin-bottom:2px;}
+.home-sub{font-size:11px;color:rgba(255,255,255,0.65);}
+.home-cards{display:flex;gap:10px;padding:14px;flex-wrap:wrap;}
+.home-card{flex:1;min-width:88px;background:#fff;border-radius:14px;padding:14px 10px;border:1px solid #ebebeb;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;text-align:center;}
+.home-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.08);}
+.home-card:active{transform:scale(0.96);}
+.hc-icon{font-size:24px;margin-bottom:6px;}
+.hc-title{font-size:11px;font-weight:700;color:#1a1a2e;margin-bottom:3px;}
+.hc-desc{font-size:9px;color:#888;line-height:1.4;}
+.badge{display:inline-block;background:#ff4444;color:#fff;font-size:8px;font-weight:700;padding:1px 6px;border-radius:8px;margin-top:4px;}
+.home-section{padding:0 14px 14px;}
+.home-section-title{font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:8px;padding-top:4px;}
+.status-item{display:flex;align-items:center;gap:10px;padding:11px 12px;background:#fff;border-radius:12px;margin-bottom:6px;border:1px solid #f0f0f0;}
+.s-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.s-dot.g{background:#06c755;}
+.s-dot.o{background:#ff8c00;}
+.s-dot.gr{background:#ccc;}
+.s-text{font-size:11px;color:#333;flex:1;line-height:1.4;}
+.s-date{font-size:10px;color:#bbb;}
+
+/* JOBS */
+.jobs-tabs{display:flex;background:#fff;border-bottom:1px solid #eee;}
+.jt{flex:1;padding:11px 4px;text-align:center;font-size:11px;color:#aaa;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;}
+.jt.active{color:#06c755;border-bottom-color:#06c755;font-weight:700;}
+.alert-banner{background:#fff8e1;padding:10px 14px;font-size:11px;color:#b06000;display:flex;gap:8px;align-items:center;border-bottom:1px solid #ffe58f;}
+.job-card{padding:14px;border-bottom:1px solid #f0f0f0;background:#fff;}
+.jc-company{font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:2px;}
+.jc-role{font-size:11px;color:#666;margin-bottom:8px;}
+.jc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.jc-tag{font-size:9px;background:#f0f0f0;color:#666;padding:3px 8px;border-radius:8px;}
+.jc-tag.green{background:#e6f9ee;color:#0a7c3a;}
+.vote-row{display:flex;gap:8px;justify-content:flex-end;}
+.vbtn{padding:7px 16px;border-radius:22px;font-size:13px;font-weight:700;cursor:pointer;border:1.5px solid;transition:all 0.2s;background:#fff;user-select:none;}
+.vbtn:active{transform:scale(0.94);}
+.vbtn.yes{border-color:#06c755;color:#06c755;}
+.vbtn.no{border-color:#ff4444;color:#ff4444;}
+.vbtn.maybe{border-color:#ff8c00;color:#ff8c00;}
+.vbtn.sel-yes{background:#06c755;color:#fff;border-color:#06c755;}
+.vbtn.sel-no{background:#ff4444;color:#fff;border-color:#ff4444;}
+.vbtn.sel-maybe{background:#ff8c00;color:#fff;border-color:#ff8c00;}
+
+/* SCHEDULE */
+.cal-nav-row{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid #eee;}
+.cal-month{font-size:15px;font-weight:700;color:#1a1a2e;}
+.cal-btn{font-size:18px;color:#06c755;cursor:pointer;padding:4px 8px;user-select:none;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:10px 14px 6px;background:#fff;}
+.cd-label{text-align:center;font-size:10px;color:#aaa;padding:3px 0;}
+.cd{text-align:center;font-size:11px;padding:7px 2px;border-radius:8px;cursor:pointer;transition:background 0.15s;user-select:none;}
+.cd.today{background:#06c755;color:#fff;font-weight:700;}
+.cd.event{background:#e6f9ee;color:#0a7c3a;font-weight:700;}
+.cd.empty{color:#ddd;}
+.cd.selected{background:#3B3FE4;color:#fff;}
+.cd:not(.today):not(.empty):hover{background:#f0f0f0;}
+.schedule-list{padding:12px 14px;}
+.sl-title{font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:10px;}
+.sl-item{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid #f5f5f5;align-items:flex-start;}
+.sl-time{font-size:11px;color:#06c755;font-weight:700;min-width:42px;margin-top:1px;}
+.sl-ctitle{font-size:12px;font-weight:700;color:#1a1a2e;}
+.sl-csub{font-size:10px;color:#888;margin-top:2px;}
+.sl-badge{display:inline-block;font-size:9px;padding:2px 7px;border-radius:8px;margin-top:5px;}
+.sl-badge.ok{background:#e6f9ee;color:#0a7c3a;}
+.sl-badge.pend{background:#fff8e1;color:#b06000;}
+.new-btn{margin:10px 14px 14px;background:#06c755;color:#fff;font-size:13px;font-weight:700;padding:12px;border-radius:12px;text-align:center;cursor:pointer;transition:opacity 0.2s;user-select:none;}
+.new-btn:hover{opacity:0.9;}
+.new-btn:active{opacity:0.75;}
+
+/* FILES */
+.upload-area{margin:14px;border:2px dashed #ddd;border-radius:14px;padding:22px;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;}
+.upload-area:hover{border-color:#06c755;background:#f0fff6;}
+.upload-icon{font-size:30px;margin-bottom:8px;}
+.upload-text{font-size:12px;color:#888;}
+.upload-sub{font-size:10px;color:#bbb;margin-top:3px;}
+.file-sec-title{font-size:12px;font-weight:700;color:#1a1a2e;padding:0 14px 8px;}
+.file-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #f5f5f5;background:#fff;cursor:pointer;transition:background 0.15s;}
+.file-item:hover{background:#f8f8f8;}
+.f-icon{font-size:22px;flex-shrink:0;}
+.f-name{font-size:12px;font-weight:700;color:#1a1a2e;}
+.f-meta{font-size:10px;color:#aaa;margin-top:2px;}
+.f-status{margin-left:auto;font-size:9px;padding:3px 9px;border-radius:9px;font-weight:700;flex-shrink:0;}
+.f-ok{background:#e6f9ee;color:#0a7c3a;}
+.f-rev{background:#fff8e1;color:#b06000;}
+.f-new{background:#eef0ff;color:#3B3FE4;}
+.ca-comment{margin:10px 14px;background:#fff8e1;border-radius:12px;padding:12px;font-size:11px;color:#856404;line-height:1.6;border-left:3px solid #ffcc00;}
+
+/* TOAST */
+.toast{position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.82);color:#fff;font-size:12px;padding:12px 22px;border-radius:12px;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;text-align:center;white-space:nowrap;}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="demo-wrapper">
+  <!-- LEFT INFO PANEL -->
+  <div class="demo-info">
+    <div class="demo-logo">LINE Mini App Demo</div>
+    <div class="demo-title">求職者<span>マイページ</span><br>操作デモ</div>
+    <div class="demo-desc">求職者が実際に使うLINEミニアプリのUIをそのまま体験できます。各タブをタップして操作してください。</div>
+    <div class="demo-steps">
+      <div class="demo-step"><div class="step-num">1</div><div class="step-text"><strong style="color:#fff;">求人タブ</strong> — ○/×/△をタップして意向回答。全件回答すると完了メッセージ。</div></div>
+      <div class="demo-step"><div class="step-num">2</div><div class="step-text"><strong style="color:#fff;">予定タブ</strong> — カレンダーの日付をタップして面談予定を切り替え。4/15を選択すると別の予定。</div></div>
+      <div class="demo-step"><div class="step-num">3</div><div class="step-text"><strong style="color:#fff;">書類タブ</strong> — ファイルの状態確認・CAコメントを確認。アップロードエリアもタップ可。</div></div>
+      <div class="demo-step"><div class="step-num">4</div><div class="step-text"><strong style="color:#fff;">ホーム</strong> — 各カードから各タブにジャンプ。選考状況の一覧を確認。</div></div>
+    </div>
+    <div class="demo-badge">商談用デモ ver.1.0 — Confidential</div>
+  </div>
+
+  <!-- PHONE -->
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="status-bar">
+        <span class="status-time">12:22</span>
+        <span class="status-icons">📶 🔋</span>
+      </div>
+      <div class="line-header">
+        <span class="line-back">＜</span>
+        <span class="line-title" id="hdr">マイページ</span>
+        <div class="line-icons"><span>🔔</span><span>☰</span></div>
+      </div>
+
+      <div class="screen" id="main-screen">
+
+        <!-- HOME -->
+        <div class="screen-content active" id="sc-home">
+          <div class="home-hero">
+            <div class="home-greet">こんにちは、</div>
+            <div class="home-name">山田 太郎 さん</div>
+            <div class="home-sub">本日の面談: 14:00 株式会社テクノス</div>
+          </div>
+          <div class="home-cards">
+            <div class="home-card" onclick="go('jobs')">
+              <div class="hc-icon">💼</div>
+              <div class="hc-title">紹介求人</div>
+              <div class="hc-desc">未回答あり</div>
+              <span class="badge" id="home-badge">3件</span>
+            </div>
+            <div class="home-card" onclick="go('schedule')">
+              <div class="hc-icon">📅</div>
+              <div class="hc-title">面談予定</div>
+              <div class="hc-desc">4/9 14:00</div>
+            </div>
+            <div class="home-card" onclick="go('files')">
+              <div class="hc-icon">📁</div>
+              <div class="hc-title">書類管理</div>
+              <div class="hc-desc">修正依頼あり</div>
+              <span class="badge">1件</span>
+            </div>
+          </div>
+          <div class="home-section">
+            <div class="home-section-title">選考状況</div>
+            <div class="status-item"><div class="s-dot g"></div><div class="s-text">株式会社Mico — 書類選考中</div><div class="s-date">4/5</div></div>
+            <div class="status-item"><div class="s-dot o"></div><div class="s-text">株式会社テクノス — 面接日程調整中</div><div class="s-date">4/3</div></div>
+            <div class="status-item"><div class="s-dot gr"></div><div class="s-text">コンサル株式会社 — 辞退済み</div><div class="s-date">3/28</div></div>
+          </div>
+        </div>
+
+        <!-- JOBS -->
+        <div class="screen-content" id="sc-jobs">
+          <div class="jobs-tabs">
+            <div class="jt active">未回答 <span id="badge-count" style="color:#ff4444;font-weight:700;">3</span></div>
+            <div class="jt" onclick="showToast('回答済み求人を表示します')">回答済み</div>
+            <div class="jt" onclick="showToast('辞退済み求人を表示します')">辞退</div>
+          </div>
+          <div class="alert-banner" id="alert-banner">⚠️ 3件の求人に未回答です。ご回答ください。</div>
+          <div class="job-card">
+            <div class="jc-company">株式会社フューチャーテック</div>
+            <div class="jc-role">カスタマーサクセス / 正社員</div>
+            <div class="jc-tags"><span class="jc-tag green">年収450〜600万</span><span class="jc-tag">リモート可</span><span class="jc-tag">SaaS</span></div>
+            <div class="vote-row">
+              <button class="vbtn maybe" onclick="vote(this,'maybe',0)">△</button>
+              <button class="vbtn no" onclick="vote(this,'no',0)">×</button>
+              <button class="vbtn yes" onclick="vote(this,'yes',0)">○</button>
+            </div>
+          </div>
+          <div class="job-card">
+            <div class="jc-company">株式会社グローバルコム</div>
+            <div class="jc-role">法人営業 / 正社員</div>
+            <div class="jc-tags"><span class="jc-tag green">年収400〜550万</span><span class="jc-tag">大手</span><span class="jc-tag">安定</span></div>
+            <div class="vote-row">
+              <button class="vbtn maybe" onclick="vote(this,'maybe',1)">△</button>
+              <button class="vbtn no" onclick="vote(this,'no',1)">×</button>
+              <button class="vbtn yes" onclick="vote(this,'yes',1)">○</button>
+            </div>
+          </div>
+          <div class="job-card">
+            <div class="jc-company">株式会社NextStep</div>
+            <div class="jc-role">マーケティングマネージャー / 正社員</div>
+            <div class="jc-tags"><span class="jc-tag green">年収500〜700万</span><span class="jc-tag">スタートアップ</span></div>
+            <div class="vote-row">
+              <button class="vbtn maybe" onclick="vote(this,'maybe',2)">△</button>
+              <button class="vbtn no" onclick="vote(this,'no',2)">×</button>
+              <button class="vbtn yes" onclick="vote(this,'yes',2)">○</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCHEDULE -->
+        <div class="screen-content" id="sc-schedule">
+          <div class="cal-nav-row">
+            <span class="cal-btn">‹</span>
+            <span class="cal-month">2026年 4月</span>
+            <span class="cal-btn">›</span>
+          </div>
+          <div class="cal-grid">
+            <div class="cd-label">日</div><div class="cd-label">月</div><div class="cd-label">火</div><div class="cd-label">水</div><div class="cd-label">木</div><div class="cd-label">金</div><div class="cd-label">土</div>
+            <div class="cd empty"></div><div class="cd empty"></div><div class="cd empty"></div><div class="cd">1</div><div class="cd">2</div><div class="cd">3</div><div class="cd">4</div>
+            <div class="cd">5</div><div class="cd">6</div><div class="cd today">7</div><div class="cd event" onclick="selDay(this,'9')">9</div><div class="cd">10</div><div class="cd">11</div><div class="cd">12</div>
+            <div class="cd">13</div><div class="cd">14</div><div class="cd event" onclick="selDay(this,'15')">15</div><div class="cd">16</div><div class="cd">17</div><div class="cd">18</div><div class="cd">19</div>
+            <div class="cd">20</div><div class="cd">21</div><div class="cd">22</div><div class="cd">23</div><div class="cd">24</div><div class="cd">25</div><div class="cd">26</div>
+          </div>
+          <div class="schedule-list" id="sched-list">
+            <div class="sl-title">4月9日(水)の予定</div>
+            <div class="sl-item"><div class="sl-time">14:00</div><div><div class="sl-ctitle">株式会社テクノス — 1次面接</div><div class="sl-csub">Web面接 / Zoom</div><span class="sl-badge ok">確定済み</span></div></div>
+            <div class="sl-item"><div class="sl-time">16:00</div><div><div class="sl-ctitle">CA面談（田中）</div><div class="sl-csub">進捗確認・次のステップ</div><span class="sl-badge ok">確定済み</span></div></div>
+          </div>
+          <div class="new-btn" onclick="showToast('📅 カレンダーから空き枠を選択できます')">＋ 新しい面談を予約する</div>
+        </div>
+
+        <!-- FILES -->
+        <div class="screen-content" id="sc-files">
+          <div class="upload-area" onclick="showToast('📎 ファイルを選択してアップロード')">
+            <div class="upload-icon">📎</div>
+            <div class="upload-text">タップしてファイルをアップロード</div>
+            <div class="upload-sub">PDF / Word / JPG 対応</div>
+          </div>
+          <div class="file-sec-title">アップロード済み書類</div>
+          <div class="file-item" onclick="showToast('履歴書を開きます')">
+            <div class="f-icon">📄</div>
+            <div><div class="f-name">履歴書_山田太郎_v2.pdf</div><div class="f-meta">2026/04/03 · 245KB</div></div>
+            <span class="f-status f-ok">確認済み</span>
+          </div>
+          <div class="file-item" onclick="showToast('修正依頼の詳細を確認')">
+            <div class="f-icon">📝</div>
+            <div><div class="f-name">職務経歴書_山田太郎.pdf</div><div class="f-meta">2026/04/01 · 312KB</div></div>
+            <span class="f-status f-rev">修正依頼</span>
+          </div>
+          <div class="file-item" onclick="showToast('CAがレビュー中です')">
+            <div class="f-icon">📋</div>
+            <div><div class="f-name">スキルシート.xlsx</div><div class="f-meta">2026/03/28 · 88KB</div></div>
+            <span class="f-status f-new">レビュー中</span>
+          </div>
+          <div class="ca-comment">💬 <strong>CAよりコメント：</strong><br>職務経歴書の「得意なこと」欄をより具体的にご記載ください。実績数値があるとさらに良いです。</div>
+        </div>
+
+      </div><!-- /screen -->
+
+      <div class="nav-tabs">
+        <div class="nav-tab active" id="tab-home" onclick="go('home')"><span class="nav-tab-icon">🏠</span>ホーム</div>
+        <div class="nav-tab" id="tab-jobs" onclick="go('jobs')"><span class="nav-tab-icon">💼</span>求人</div>
+        <div class="nav-tab" id="tab-schedule" onclick="go('schedule')"><span class="nav-tab-icon">📅</span>予定</div>
+        <div class="nav-tab" id="tab-files" onclick="go('files')"><span class="nav-tab-icon">📁</span>書類</div>
+      </div>
+    </div>
+    <div class="phone-label">各タブ・ボタン・カレンダーをタップして操作</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var titles={home:'マイページ',jobs:'紹介求人',schedule:'面談予定',files:'書類管理'};
+var votes={};
+
+function go(tab){
+  ['home','jobs','schedule','files'].forEach(function(t){
+    document.getElementById('sc-'+t).classList.remove('active');
+    document.getElementById('tab-'+t).classList.remove('active');
+  });
+  document.getElementById('sc-'+tab).classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.getElementById('hdr').textContent=titles[tab];
+  document.getElementById('main-screen').scrollTop=0;
+}
+
+function vote(btn,type,id){
+  var card=btn.closest('.job-card');
+  card.querySelectorAll('.vbtn').forEach(function(b){
+    b.className=b.className.replace(/\bsel-\w+/g,'').trim();
+  });
+  btn.classList.add('sel-'+type);
+  votes[id]=type;
+  var rem=3-Object.keys(votes).length;
+  var banner=document.getElementById('alert-banner');
+  var bc=document.getElementById('badge-count');
+  var hb=document.getElementById('home-badge');
+  if(rem>0){
+    banner.innerHTML='⚠️ '+rem+'件の求人に未回答です。ご回答ください。';
+    bc.textContent=rem;
+    hb.textContent=rem+'件';
+  } else {
+    banner.style.background='#e6f9ee';
+    banner.style.color='#0a7c3a';
+    banner.style.borderBottom='1px solid #b2f0cb';
+    banner.textContent='✅ すべての求人に回答しました！CAから連絡をお待ちください。';
+    bc.textContent='0';
+    hb.textContent='完了';
+    hb.style.background='#06c755';
+  }
+  var msg=type==='yes'?'○ 応募意向あり':(type==='no'?'× 見送り':'△ 保留');
+  showToast(msg+' — 回答を送信しました');
+}
+
+function selDay(el,day){
+  document.querySelectorAll('.cd').forEach(function(d){
+    if(!d.classList.contains('today'))d.classList.remove('selected');
+  });
+  el.classList.add('selected');
+  var list=document.getElementById('sched-list');
+  if(day==='15'){
+    list.innerHTML='<div class="sl-title">4月15日(水)の予定</div><div class="sl-item"><div class="sl-time">10:00</div><div><div class="sl-ctitle">株式会社Mico — 2次面接</div><div class="sl-csub">対面 / 渋谷オフィス</div><span class="sl-badge pend">日程調整中</span></div></div>';
+  } else {
+    list.innerHTML='<div class="sl-title">4月9日(水)の予定</div><div class="sl-item"><div class="sl-time">14:00</div><div><div class="sl-ctitle">株式会社テクノス — 1次面接</div><div class="sl-csub">Web面接 / Zoom</div><span class="sl-badge ok">確定済み</span></div></div><div class="sl-item"><div class="sl-time">16:00</div><div><div class="sl-ctitle">CA面談（田中）</div><div class="sl-csub">進捗確認・次のステップ</div><span class="sl-badge ok">確定済み</span></div></div>';
+  }
+}
+
+var toastTimer;
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){t.classList.remove('show');},2000);
+}
+</script>
+</body>
+</html>
