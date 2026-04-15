@@ -3,380 +3,1151 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LINE Mini App — 求職者マイページ デモ</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<title>人材 LINEミニアプリ × mico engageAI 連携アーキテクチャ（Light標準パッケージ）</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Noto Sans JP',sans-serif;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Helvetica Neue', 'Hiragino Sans', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
 
-.demo-wrapper{display:flex;gap:48px;align-items:flex-start;justify-content:center;flex-wrap:wrap;}
+  .header { text-align: center; padding: 40px 20px 20px; }
+  .header h1 { font-size: 28px; font-weight: 700; background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .header .subtitle { color: #94a3b8; font-size: 14px; margin-top: 8px; }
+  .header .badge { display: inline-block; margin-top: 12px; background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; padding: 4px 14px; border-radius: 20px; font-size: 12px; }
+  .header .badge.highlight { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); color: #4ade80; margin-left: 6px; }
 
-/* LEFT PANEL */
-.demo-info{max-width:280px;color:#fff;}
-.demo-logo{font-size:13px;letter-spacing:0.15em;color:rgba(200,255,0,0.8);text-transform:uppercase;font-weight:700;margin-bottom:20px;}
-.demo-title{font-size:26px;font-weight:700;line-height:1.3;margin-bottom:12px;}
-.demo-title span{color:#C8FF00;}
-.demo-desc{font-size:13px;color:rgba(255,255,255,0.6);line-height:1.7;margin-bottom:24px;}
-.demo-steps{display:flex;flex-direction:column;gap:10px;}
-.demo-step{display:flex;gap:10px;align-items:flex-start;}
-.step-num{width:22px;height:22px;border-radius:50%;background:#C8FF00;color:#1a1a2e;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
-.step-text{font-size:12px;color:rgba(255,255,255,0.7);line-height:1.5;}
-.demo-badge{display:inline-block;background:rgba(200,255,0,0.1);border:1px solid rgba(200,255,0,0.3);color:#C8FF00;font-size:10px;padding:4px 12px;border-radius:12px;margin-top:20px;}
+  .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
-/* PHONE */
-.phone-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;}
-.phone-label{font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:0.08em;}
-.phone{width:340px;height:680px;background:#f5f5f5;border-radius:44px;overflow:hidden;border:10px solid #0d0d1a;box-shadow:0 32px 80px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.05);display:flex;flex-direction:column;position:relative;}
-.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:28px;background:#0d0d1a;border-radius:0 0 20px 20px;z-index:10;}
+  /* Architecture Diagram */
+  .arch-section { margin-bottom: 40px; }
+  .arch-section h2 { font-size: 20px; font-weight: 600; margin-bottom: 20px; padding-left: 12px; border-left: 3px solid #818cf8; }
 
-.status-bar{background:#06c755;padding:32px 16px 8px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
-.status-time{font-size:12px;font-weight:700;color:#fff;}
-.status-icons{font-size:11px;color:#fff;}
-.line-header{background:#06c755;padding:10px 16px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
-.line-back{color:#fff;font-size:20px;cursor:pointer;user-select:none;}
-.line-title{font-size:15px;font-weight:700;color:#fff;flex:1;}
-.line-icons{display:flex;gap:14px;color:#fff;font-size:15px;cursor:pointer;}
+  .arch-diagram { display: grid; grid-template-columns: 1fr 80px 1fr 80px 1fr; align-items: start; gap: 0; padding: 30px 10px; }
 
-.screen{flex:1;overflow-y:auto;overflow-x:hidden;background:#f8f8f8;}
-.screen::-webkit-scrollbar{width:3px;}
-.screen::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.1);border-radius:2px;}
+  .arch-layer { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(100, 116, 139, 0.3); border-radius: 16px; padding: 24px 20px; position: relative; }
+  .arch-layer.user-layer { border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.05); }
+  .arch-layer.mini-layer { border-color: rgba(56,189,248,0.4); background: rgba(56,189,248,0.05); }
+  .arch-layer.me-layer { border-color: rgba(168,85,247,0.4); background: rgba(168,85,247,0.05); }
 
-.nav-tabs{display:flex;background:#fff;border-top:1px solid #e8e8e8;flex-shrink:0;padding-bottom:4px;}
-.nav-tab{flex:1;padding:8px 4px 10px;text-align:center;cursor:pointer;font-size:9px;color:#aaa;border-top:2px solid transparent;transition:all 0.2s;user-select:none;}
-.nav-tab.active{color:#06c755;border-top-color:#06c755;font-weight:700;}
-.nav-tab-icon{font-size:20px;display:block;margin-bottom:2px;}
+  .layer-icon { font-size: 32px; margin-bottom: 10px; }
+  .layer-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .layer-subtitle { font-size: 11px; color: #94a3b8; margin-bottom: 16px; }
 
-.screen-content{display:none;}
-.screen-content.active{display:block;}
+  .layer-items { list-style: none; }
+  .layer-items li { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(100,116,139,0.2); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .layer-items li .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot.green { background: #22c55e; }
+  .dot.blue { background: #38bdf8; }
+  .dot.purple { background: #a855f7; }
+  .dot.amber { background: #f59e0b; }
+  .dot.red { background: #ef4444; }
 
-/* HOME */
-.home-hero{background:linear-gradient(135deg,#06c755 0%,#04a34f 100%);padding:18px 16px 20px;}
-.home-greet{font-size:12px;color:rgba(255,255,255,0.8);margin-bottom:3px;}
-.home-name{font-size:18px;font-weight:700;color:#fff;margin-bottom:2px;}
-.home-sub{font-size:11px;color:rgba(255,255,255,0.65);}
-.home-cards{display:flex;gap:10px;padding:14px;flex-wrap:wrap;}
-.home-card{flex:1;min-width:88px;background:#fff;border-radius:14px;padding:14px 10px;border:1px solid #ebebeb;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;text-align:center;}
-.home-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.08);}
-.home-card:active{transform:scale(0.96);}
-.hc-icon{font-size:24px;margin-bottom:6px;}
-.hc-title{font-size:11px;font-weight:700;color:#1a1a2e;margin-bottom:3px;}
-.hc-desc{font-size:9px;color:#888;line-height:1.4;}
-.badge{display:inline-block;background:#ff4444;color:#fff;font-size:8px;font-weight:700;padding:1px 6px;border-radius:8px;margin-top:4px;}
-.home-section{padding:0 14px 14px;}
-.home-section-title{font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:8px;padding-top:4px;}
-.status-item{display:flex;align-items:center;gap:10px;padding:11px 12px;background:#fff;border-radius:12px;margin-bottom:6px;border:1px solid #f0f0f0;}
-.s-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.s-dot.g{background:#06c755;}
-.s-dot.o{background:#ff8c00;}
-.s-dot.gr{background:#ccc;}
-.s-text{font-size:11px;color:#333;flex:1;line-height:1.4;}
-.s-date{font-size:10px;color:#bbb;}
+  .layer-note { margin-top: 12px; padding: 8px 10px; background: rgba(245,158,11,0.1); border: 1px dashed rgba(245,158,11,0.3); border-radius: 6px; font-size: 11px; color: #fbbf24; }
 
-/* JOBS */
-.jobs-tabs{display:flex;background:#fff;border-bottom:1px solid #eee;}
-.jt{flex:1;padding:11px 4px;text-align:center;font-size:11px;color:#aaa;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;}
-.jt.active{color:#06c755;border-bottom-color:#06c755;font-weight:700;}
-.alert-banner{background:#fff8e1;padding:10px 14px;font-size:11px;color:#b06000;display:flex;gap:8px;align-items:center;border-bottom:1px solid #ffe58f;}
-.job-card{padding:14px;border-bottom:1px solid #f0f0f0;background:#fff;}
-.jc-company{font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:2px;}
-.jc-role{font-size:11px;color:#666;margin-bottom:8px;}
-.jc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
-.jc-tag{font-size:9px;background:#f0f0f0;color:#666;padding:3px 8px;border-radius:8px;}
-.jc-tag.green{background:#e6f9ee;color:#0a7c3a;}
-.vote-row{display:flex;gap:8px;justify-content:flex-end;}
-.vbtn{padding:7px 16px;border-radius:22px;font-size:13px;font-weight:700;cursor:pointer;border:1.5px solid;transition:all 0.2s;background:#fff;user-select:none;}
-.vbtn:active{transform:scale(0.94);}
-.vbtn.yes{border-color:#06c755;color:#06c755;}
-.vbtn.no{border-color:#ff4444;color:#ff4444;}
-.vbtn.maybe{border-color:#ff8c00;color:#ff8c00;}
-.vbtn.sel-yes{background:#06c755;color:#fff;border-color:#06c755;}
-.vbtn.sel-no{background:#ff4444;color:#fff;border-color:#ff4444;}
-.vbtn.sel-maybe{background:#ff8c00;color:#fff;border-color:#ff8c00;}
+  .arrow-col { display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 60px; }
+  .arrow-col svg { width: 60px; height: 40px; }
+  .arrow-label { font-size: 10px; color: #64748b; text-align: center; margin-top: 4px; line-height: 1.3; }
 
-/* SCHEDULE */
-.cal-nav-row{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid #eee;}
-.cal-month{font-size:15px;font-weight:700;color:#1a1a2e;}
-.cal-btn{font-size:18px;color:#06c755;cursor:pointer;padding:4px 8px;user-select:none;}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:10px 14px 6px;background:#fff;}
-.cd-label{text-align:center;font-size:10px;color:#aaa;padding:3px 0;}
-.cd{text-align:center;font-size:11px;padding:7px 2px;border-radius:8px;cursor:pointer;transition:background 0.15s;user-select:none;}
-.cd.today{background:#06c755;color:#fff;font-weight:700;}
-.cd.event{background:#e6f9ee;color:#0a7c3a;font-weight:700;}
-.cd.empty{color:#ddd;}
-.cd.selected{background:#3B3FE4;color:#fff;}
-.cd:not(.today):not(.empty):hover{background:#f0f0f0;}
-.schedule-list{padding:12px 14px;}
-.sl-title{font-size:12px;font-weight:700;color:#1a1a2e;margin-bottom:10px;}
-.sl-item{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid #f5f5f5;align-items:flex-start;}
-.sl-time{font-size:11px;color:#06c755;font-weight:700;min-width:42px;margin-top:1px;}
-.sl-ctitle{font-size:12px;font-weight:700;color:#1a1a2e;}
-.sl-csub{font-size:10px;color:#888;margin-top:2px;}
-.sl-badge{display:inline-block;font-size:9px;padding:2px 7px;border-radius:8px;margin-top:5px;}
-.sl-badge.ok{background:#e6f9ee;color:#0a7c3a;}
-.sl-badge.pend{background:#fff8e1;color:#b06000;}
-.new-btn{margin:10px 14px 14px;background:#06c755;color:#fff;font-size:13px;font-weight:700;padding:12px;border-radius:12px;text-align:center;cursor:pointer;transition:opacity 0.2s;user-select:none;}
-.new-btn:hover{opacity:0.9;}
-.new-btn:active{opacity:0.75;}
+  /* Data Flow */
+  .flow-section { margin-bottom: 40px; }
+  .flow-section h2 { font-size: 20px; font-weight: 600; margin-bottom: 20px; padding-left: 12px; border-left: 3px solid #38bdf8; }
 
-/* FILES */
-.upload-area{margin:14px;border:2px dashed #ddd;border-radius:14px;padding:22px;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;}
-.upload-area:hover{border-color:#06c755;background:#f0fff6;}
-.upload-icon{font-size:30px;margin-bottom:8px;}
-.upload-text{font-size:12px;color:#888;}
-.upload-sub{font-size:10px;color:#bbb;margin-top:3px;}
-.file-sec-title{font-size:12px;font-weight:700;color:#1a1a2e;padding:0 14px 8px;}
-.file-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #f5f5f5;background:#fff;cursor:pointer;transition:background 0.15s;}
-.file-item:hover{background:#f8f8f8;}
-.f-icon{font-size:22px;flex-shrink:0;}
-.f-name{font-size:12px;font-weight:700;color:#1a1a2e;}
-.f-meta{font-size:10px;color:#aaa;margin-top:2px;}
-.f-status{margin-left:auto;font-size:9px;padding:3px 9px;border-radius:9px;font-weight:700;flex-shrink:0;}
-.f-ok{background:#e6f9ee;color:#0a7c3a;}
-.f-rev{background:#fff8e1;color:#b06000;}
-.f-new{background:#eef0ff;color:#3B3FE4;}
-.ca-comment{margin:10px 14px;background:#fff8e1;border-radius:12px;padding:12px;font-size:11px;color:#856404;line-height:1.6;border-left:3px solid #ffcc00;}
+  .flow-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .flow-card { background: rgba(30,41,59,0.8); border: 1px solid rgba(100,116,139,0.25); border-radius: 14px; padding: 20px; position: relative; overflow: hidden; }
+  .flow-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .flow-card.card-green::before { background: linear-gradient(90deg, #22c55e, #4ade80); }
+  .flow-card.card-blue::before { background: linear-gradient(90deg, #38bdf8, #818cf8); }
+  .flow-card.card-purple::before { background: linear-gradient(90deg, #a855f7, #c084fc); }
+  .flow-card.card-amber::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
 
-/* TOAST */
-.toast{position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.82);color:#fff;font-size:12px;padding:12px 22px;border-radius:12px;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;text-align:center;white-space:nowrap;}
-.toast.show{opacity:1;}
+  .flow-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+  .flow-card.card-green .flow-num { background: rgba(34,197,94,0.2); color: #4ade80; }
+  .flow-card.card-blue .flow-num { background: rgba(56,189,248,0.2); color: #38bdf8; }
+  .flow-card.card-purple .flow-num { background: rgba(168,85,247,0.2); color: #c084fc; }
+  .flow-card.card-amber .flow-num { background: rgba(245,158,11,0.2); color: #fbbf24; }
+
+  .flow-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+  .flow-card p { font-size: 12px; color: #94a3b8; line-height: 1.6; }
+  .flow-card .tech-tag { display: inline-block; background: rgba(100,116,139,0.2); border-radius: 4px; padding: 2px 8px; font-size: 10px; color: #64748b; margin-top: 8px; margin-right: 4px; }
+
+  /* Event Loop Diagram */
+  .loop-wrap { background: rgba(30,41,59,0.6); border: 1px solid rgba(100,116,139,0.25); border-radius: 14px; padding: 28px; margin-top: 24px; }
+  .loop-title { font-size: 14px; font-weight: 600; color: #e2e8f0; margin-bottom: 20px; text-align: center; }
+  .loop-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; align-items: center; }
+  .loop-step { background: rgba(15,23,42,0.8); border: 1px solid rgba(100,116,139,0.3); border-radius: 10px; padding: 14px 10px; text-align: center; position: relative; }
+  .loop-step .icon { font-size: 24px; margin-bottom: 6px; }
+  .loop-step .title { font-size: 12px; font-weight: 600; color: #e2e8f0; margin-bottom: 4px; }
+  .loop-step .sub { font-size: 10px; color: #94a3b8; line-height: 1.4; }
+  .loop-step.action { border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.06); }
+  .loop-step.event { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.06); }
+  .loop-step.ai { border-color: rgba(168,85,247,0.4); background: rgba(168,85,247,0.06); }
+  .loop-step.output { border-color: rgba(56,189,248,0.4); background: rgba(56,189,248,0.06); }
+  .loop-arrow { text-align: center; color: #64748b; font-size: 20px; }
+
+  /* Scope Table */
+  .scope-section { margin-bottom: 40px; }
+  .scope-section h2 { font-size: 20px; font-weight: 600; margin-bottom: 20px; padding-left: 12px; border-left: 3px solid #f59e0b; }
+
+  .scope-table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 12px; overflow: hidden; }
+  .scope-table thead th { background: rgba(30,41,59,0.9); padding: 14px 16px; font-size: 12px; font-weight: 600; text-align: left; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid rgba(100,116,139,0.3); }
+  .scope-table tbody td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid rgba(100,116,139,0.15); background: rgba(15,23,42,0.4); vertical-align: top; }
+  .scope-table tbody tr:hover td { background: rgba(30,41,59,0.6); }
+
+  .scope-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .scope-badge.include { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .scope-badge.exclude { background: rgba(239,68,68,0.15); color: #f87171; }
+
+  /* Revenue Model */
+  .rev-section { margin-bottom: 40px; }
+  .rev-section h2 { font-size: 20px; font-weight: 600; margin-bottom: 20px; padding-left: 12px; border-left: 3px solid #22c55e; }
+  .rev-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .rev-card { background: rgba(30,41,59,0.8); border: 1px solid rgba(100,116,139,0.25); border-radius: 14px; padding: 24px; text-align: center; }
+  .rev-card .price { font-size: 32px; font-weight: 800; background: linear-gradient(135deg, #22c55e, #4ade80); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .rev-card .plan-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .rev-card .plan-desc { font-size: 11px; color: #94a3b8; margin-bottom: 16px; }
+  .rev-card ul { list-style: none; text-align: left; }
+  .rev-card ul li { font-size: 12px; padding: 4px 0; color: #cbd5e1; }
+  .rev-card ul li::before { content: '✓ '; color: #22c55e; }
+  .rev-card ul li.ex::before { content: '✗ '; color: #ef4444; }
+  .rev-card ul li.ex { color: #64748b; text-decoration: line-through; }
+  .rev-card.recommended { border-color: rgba(56,189,248,0.5); box-shadow: 0 0 20px rgba(56,189,248,0.1); }
+  .rev-card.recommended .plan-name::after { content: ' ★標準'; color: #38bdf8; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+  .tab-btn { background: rgba(30,41,59,0.6); border: 1px solid rgba(100,116,139,0.3); border-radius: 8px; padding: 8px 18px; font-size: 13px; color: #94a3b8; cursor: pointer; transition: all 0.2s; }
+  .tab-btn:hover { background: rgba(56,189,248,0.1); color: #e2e8f0; }
+  .tab-btn.active { background: rgba(56,189,248,0.15); border-color: rgba(56,189,248,0.4); color: #38bdf8; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  @media (max-width: 768px) {
+    .arch-diagram { grid-template-columns: 1fr; gap: 8px; }
+    .arrow-col { flex-direction: row; padding: 0; }
+    .arrow-col svg { transform: rotate(90deg); }
+    .rev-grid { grid-template-columns: 1fr; }
+    .loop-grid { grid-template-columns: 1fr; }
+    .loop-arrow { transform: rotate(90deg); }
+  }
+
+  /* ===== MOCK TAB STYLES ===== */
+  .mock-section h2 { font-size: 20px; font-weight: 600; margin-bottom: 20px; padding-left: 12px; border-left: 3px solid #22c55e; }
+  .mock-wrap {
+    background: #1a1a2e;
+    border-radius: 16px;
+    padding: 30px 20px;
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-x: auto;
+  }
+  .phone-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .screen-label {
+    color: #a0c4ff;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .phone {
+    width: 375px;
+    height: 812px;
+    background: #fff;
+    border-radius: 44px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5), inset 0 0 0 2px #333;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    color: #111;
+  }
+  .phone h1, .phone h3 { color: inherit; background: none; -webkit-text-fill-color: initial; }
+  .status-bar { height: 44px; background: #06C755; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0; }
+  .status-bar .time { color: white; font-size: 15px; font-weight: 600; }
+  .status-bar .icons { display: flex; gap: 6px; align-items: center; }
+  .status-bar .icons span { color: white; font-size: 12px; }
+  .app-header { background: #06C755; padding: 12px 16px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .app-header .back { color: white; font-size: 18px; cursor: pointer; }
+  .app-header h1 { color: white; font-size: 17px; font-weight: 700; flex: 1; margin: 0; }
+  .app-header .menu { color: white; font-size: 20px; }
+  .phone .content { flex: 1; overflow-y: auto; background: #f5f5f5; }
+  .phone .content::-webkit-scrollbar { display: none; }
+  .bottom-nav { height: 56px; background: white; border-top: 1px solid #e0e0e0; display: flex; flex-shrink: 0; }
+  .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; transition: all 0.2s; }
+  .tab-item.active { color: #06C755; }
+  .tab-item:not(.active) { color: #999; }
+  .tab-icon { font-size: 22px; line-height: 1; }
+  .tab-label { font-size: 10px; font-weight: 500; }
+  .home-hero { background: linear-gradient(135deg, #06C755 0%, #04a347 100%); padding: 20px 16px; color: white; }
+  .home-hero .greeting { font-size: 13px; opacity: 0.9; }
+  .home-hero .name { font-size: 20px; font-weight: 700; margin: 4px 0 12px; }
+  .status-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .status-chip { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: white; }
+  .status-chip.alert { background: rgba(255,200,0,0.3); border-color: rgba(255,200,0,0.5); }
+  .section-card { background: white; margin: 10px 12px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .section-card-header { padding: 12px 14px 8px; display: flex; align-items: center; justify-content: space-between; }
+  .section-card-header h3 { font-size: 14px; font-weight: 700; color: #222; margin: 0; }
+  .section-card-header .more { font-size: 12px; color: #06C755; font-weight: 600; }
+  .process-row { display: flex; align-items: center; padding: 10px 14px; border-top: 1px solid #f0f0f0; gap: 12px; }
+  .process-icon { font-size: 24px; }
+  .process-info { flex: 1; }
+  .process-title { font-size: 13px; font-weight: 600; color: #222; }
+  .process-sub { font-size: 11px; color: #888; margin-top: 2px; }
+  .process-badge { font-size: 11px; padding: 3px 8px; border-radius: 10px; font-weight: 600; }
+  .badge-applied { background: #e3f2fd; color: #1565c0; }
+  .badge-interview { background: #fff3e0; color: #e65100; }
+  .badge-complete { background: #e8f5e9; color: #2e7d32; }
+  .quick-action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px 12px 14px; }
+  .quick-action-btn { background: linear-gradient(135deg, #06C755 0%, #04a347 100%); color: white; border: none; border-radius: 10px; padding: 14px 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(6,199,85,0.3); }
+  .quick-action-btn span:first-child { font-size: 22px; }
+  .quick-action-btn.secondary { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); color: #16a34a; box-shadow: none; border: 1.5px solid #bbf7d0; }
+  .search-bar { background: white; padding: 10px 12px; display: flex; gap: 8px; align-items: center; border-bottom: 1px solid #eee; }
+  .search-input { flex: 1; background: #f5f5f5; border: none; border-radius: 20px; padding: 8px 14px; font-size: 13px; color: #333; outline: none; }
+  .filter-btn { background: #06C755; color: white; border: none; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .job-filters { background: white; padding: 8px 12px; display: flex; gap: 6px; overflow-x: auto; border-bottom: 1px solid #eee; }
+  .job-filters::-webkit-scrollbar { display: none; }
+  .filter-chip { background: #f0fdf4; border: 1.5px solid #bbf7d0; color: #16a34a; border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 600; white-space: nowrap; cursor: pointer; flex-shrink: 0; }
+  .filter-chip.active { background: #06C755; color: white; border-color: #06C755; }
+  .jobs-list { padding: 8px 12px; }
+  .job-card { background: white; border-radius: 12px; padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border-left: 4px solid #06C755; }
+  .job-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+  .job-card-top .job-title { font-size: 14px; font-weight: 700; color: #111; line-height: 1.3; flex: 1; }
+  .job-card-top .job-new { background: #ff5722; color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; margin-left: 8px; }
+  .job-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+  .job-tag { background: #f5f5f5; color: #555; font-size: 10px; padding: 3px 8px; border-radius: 4px; }
+  .job-salary { font-size: 15px; font-weight: 700; color: #e53935; margin-bottom: 8px; }
+  .job-footer { display: flex; align-items: center; justify-content: space-between; }
+  .job-location { font-size: 11px; color: #888; display: flex; align-items: center; gap: 4px; }
+  .reaction-btns { display: flex; gap: 6px; align-items: center; }
+  .like-btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 20px; border: 1.5px solid #06C755; background: white; color: #06C755; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+  .like-btn:hover, .like-btn.active { background: #06C755; color: white; border-color: #06C755; }
+  .like-btn .heart { font-size: 13px; line-height: 1; }
+  .like-count { font-size: 11px; color: #888; }
+  .apply-btn { background: #06C755; color: white; border: none; border-radius: 8px; padding: 8px 16px; font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 10px; width: 100%; box-shadow: 0 2px 6px rgba(6,199,85,0.3); }
+  .job-image { width: calc(100% + 28px); height: 120px; margin: -14px -14px 10px -14px; border-radius: 12px 12px 0 0; display: flex; align-items: center; justify-content: center; font-size: 52px; position: relative; overflow: hidden; }
+  .job-image::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.15) 100%); }
+  .job-image .job-image-badge { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.95); color: #111; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; z-index: 1; }
+  .job-image.img-factory { background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%); }
+  .job-image.img-warehouse { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); }
+  .job-image.img-electronics { background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%); }
+  .job-image.img-food { background: linear-gradient(135deg, #fb7185 0%, #e11d48 100%); }
+  .job-image.img-auto { background: linear-gradient(135deg, #34d399 0%, #059669 100%); }
+  /* === SWIPE CARD UI (マチアプ風) === */
+  .swipe-progress { padding: 10px 16px 8px; background: white; border-bottom: 1px solid #eee; }
+  .progress-count { font-size: 11px; color: #888; display: block; margin-bottom: 6px; font-weight: 600; }
+  .progress-bar { height: 4px; background: #f0f0f0; border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #06C755, #4caf50); border-radius: 2px; }
+  .swipe-hint { display: flex; justify-content: space-between; align-items: center; padding: 8px 18px; font-size: 10px; background: #fafafa; border-bottom: 1px solid #eee; }
+  .swipe-hint .hint-left { color: #f44336; font-weight: 700; }
+  .swipe-hint .hint-center { color: #999; }
+  .swipe-hint .hint-right { color: #06C755; font-weight: 700; }
+  .card-stack { position: relative; height: 440px; padding: 14px; display: flex; align-items: center; justify-content: center; background: #f5f5f5; }
+  .swipe-card { position: absolute; width: calc(100% - 28px); background: white; border-radius: 18px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); overflow: hidden; }
+  .swipe-card.behind-2 { transform: scale(0.88) translateY(20px); opacity: 0.5; z-index: 1; }
+  .swipe-card.behind-1 { transform: scale(0.94) translateY(10px); opacity: 0.8; z-index: 2; }
+  .swipe-card.main { z-index: 3; }
+  .swipe-card.tilt-right { transform: rotate(8deg) translateX(22px); }
+  .swipe-card.tilt-left { transform: rotate(-8deg) translateX(-22px); }
+  .swipe-overlay { position: absolute; top: 24px; padding: 6px 16px; border: 3px solid; border-radius: 8px; font-size: 18px; font-weight: 900; letter-spacing: 2px; z-index: 10; }
+  .like-overlay { right: 20px; transform: rotate(15deg); color: #06C755; border-color: #06C755; }
+  .nope-overlay { left: 20px; transform: rotate(-15deg); color: #f44336; border-color: #f44336; }
+  .card-image-big { height: 200px; display: flex; align-items: center; justify-content: center; font-size: 72px; position: relative; }
+  .card-image-big .image-badge { position: absolute; top: 12px; left: 12px; background: rgba(255,255,255,0.95); color: #111; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; }
+  .card-image-big .image-count { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white; font-size: 10px; padding: 3px 8px; border-radius: 10px; }
+  .card-body { padding: 14px; }
+  .card-title-big { font-size: 15px; font-weight: 700; color: #111; line-height: 1.3; margin-bottom: 6px; }
+  .card-salary-big { font-size: 18px; font-weight: 800; color: #e53935; margin-bottom: 4px; }
+  .card-location-big { font-size: 12px; color: #666; margin-bottom: 8px; }
+  .card-tags-big { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+  .c-tag { background: #f5f5f5; color: #555; font-size: 10px; padding: 3px 8px; border-radius: 4px; }
+  .card-highlight { background: linear-gradient(135deg, #fff9e6 0%, #fef3c7 100%); border-left: 3px solid #f59e0b; padding: 8px 10px; font-size: 11px; color: #92400e; border-radius: 6px; font-weight: 600; line-height: 1.4; }
+  .swipe-actions { display: flex; justify-content: center; align-items: center; gap: 16px; padding: 14px 16px; background: white; border-top: 1px solid #eee; }
+  .action-btn { border-radius: 50%; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; transition: transform 0.15s; font-weight: 900; }
+  .action-btn.pass { width: 56px; height: 56px; background: white; color: #f44336; border: 2.5px solid #f44336; font-size: 26px; }
+  .action-btn.detail { width: 46px; height: 46px; background: white; color: #3b82f6; border: 2px solid #3b82f6; font-size: 18px; }
+  .action-btn.like { width: 56px; height: 56px; background: linear-gradient(135deg, #06C755, #04a347); color: white; font-size: 24px; }
+  .action-btn.super { width: 46px; height: 46px; background: white; color: #f59e0b; border: 2px solid #f59e0b; font-size: 18px; }
+  /* Popup */
+  .popup-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: flex-end; justify-content: center; z-index: 100; }
+  .popup { width: 100%; background: white; border-radius: 20px 20px 0 0; padding: 22px 16px 14px; max-height: 90%; overflow-y: auto; }
+  .popup-handle { width: 40px; height: 4px; background: #ddd; border-radius: 2px; margin: -10px auto 12px; }
+  .popup-icon { font-size: 36px; text-align: center; margin-bottom: 6px; }
+  .popup-title { font-size: 16px; font-weight: 700; color: #111; text-align: center; margin-bottom: 4px; }
+  .popup-subtitle { font-size: 11px; color: #888; text-align: center; margin-bottom: 14px; line-height: 1.5; }
+  .popup-options { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+  .popup-option { background: #f5f5f5; border: 1.5px solid transparent; border-radius: 10px; padding: 11px 14px; font-size: 12.5px; font-weight: 600; color: #333; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+  .popup-option .opt-icon { font-size: 15px; }
+  .popup-option.selected { background: #e8f5e9; border-color: #06C755; color: #06C755; }
+  .popup-actions { display: flex; gap: 8px; }
+  .popup-skip { flex: 1; background: #f5f5f5; color: #666; border: none; border-radius: 10px; padding: 11px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .popup-submit { flex: 2; background: #06C755; color: white; border: none; border-radius: 10px; padding: 11px; font-size: 12.5px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(6,199,85,0.3); }
+  .ai-ping { position: absolute; top: 60px; right: 14px; background: linear-gradient(135deg, #a78bfa, #7c3aed); color: white; font-size: 10px; font-weight: 700; padding: 6px 10px; border-radius: 20px; z-index: 50; box-shadow: 0 4px 12px rgba(124,58,237,0.4); display: flex; align-items: center; gap: 4px; animation: aiPulse 2s ease-in-out infinite; }
+  @keyframes aiPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+  .interview-card { background: white; margin: 10px 12px; border-radius: 12px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border-left: 4px solid #06C755; display: flex; gap: 12px; }
+  .interview-date { text-align: center; min-width: 48px; }
+  .interview-date .day { font-size: 24px; font-weight: 700; color: #06C755; line-height: 1; }
+  .interview-date .weekday { font-size: 11px; color: #888; margin-top: 2px; }
+  .interview-info { flex: 1; }
+  .interview-info .company { font-size: 14px; font-weight: 700; color: #111; }
+  .interview-info .type { font-size: 12px; color: #555; margin-top: 3px; }
+  .interview-info .time { font-size: 12px; color: #06C755; font-weight: 600; margin-top: 3px; }
+  .interview-info .loc { font-size: 11px; color: #888; margin-top: 2px; }
+  .mypage-avatar { background: linear-gradient(135deg, #06C755 0%, #04a347 100%); padding: 24px 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .avatar-circle { width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,0.3); border: 3px solid white; display: flex; align-items: center; justify-content: center; font-size: 32px; overflow: hidden; }
+  .mypage-name { color: white; font-size: 18px; font-weight: 700; }
+  .mypage-id { color: rgba(255,255,255,0.8); font-size: 12px; }
+  .mypage-section { background: white; margin: 10px 12px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .mypage-section-title { padding: 12px 14px; font-size: 13px; font-weight: 700; color: #444; border-bottom: 1px solid #f0f0f0; background: #fafafa; }
+  .mypage-row { display: flex; align-items: center; padding: 13px 14px; border-bottom: 1px solid #f5f5f5; gap: 10px; }
+  .mypage-row:last-child { border-bottom: none; }
+  .mypage-row .icon { font-size: 18px; width: 24px; }
+  .mypage-row .label { font-size: 13px; color: #222; flex: 1; }
+  .mypage-row .value { font-size: 12px; color: #888; }
+  .mypage-row .chevron { color: #ccc; font-size: 14px; }
+  .upload-area { margin: 10px 14px 14px; border: 2px dashed #c8e6c9; border-radius: 10px; padding: 20px; text-align: center; color: #666; background: #f9fff9; cursor: pointer; }
+  .upload-area .upload-icon { font-size: 32px; margin-bottom: 6px; }
+  .upload-area .upload-text { font-size: 12px; line-height: 1.5; }
+  .upload-area .upload-hint { font-size: 11px; color: #06C755; font-weight: 600; margin-top: 4px; }
+  .home-indicator { height: 34px; background: #f5f5f5; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .home-indicator-bar { width: 120px; height: 5px; background: #333; border-radius: 3px; }
+  .phone .flow-container { padding: 14px 12px; }
+  .phone .flow-title { font-size: 14px; font-weight: 700; color: #222; margin-bottom: 12px; text-align: center; padding: 0; border: none; }
+  .phone .flow-step { background: white; border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 10px; border-left: 3px solid #06C755; }
+  .phone .flow-step .step-num { width: 26px; height: 26px; background: #06C755; border-radius: 50%; color: white; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .phone .flow-step .step-text { font-size: 12px; color: #333; flex: 1; line-height: 1.4; }
+  .phone .flow-arrow { text-align: center; color: #ccc; font-size: 18px; margin: -4px 0; }
+  .flow-branch { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .flow-branch-item { background: white; border-radius: 10px; padding: 10px 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: center; }
+  .flow-branch-item.new { border-top: 3px solid #2196f3; }
+  .flow-branch-item.existing { border-top: 3px solid #06C755; }
+  .flow-branch-item .branch-label { font-size: 10px; font-weight: 700; margin-bottom: 4px; }
+  .flow-branch-item.new .branch-label { color: #2196f3; }
+  .flow-branch-item.existing .branch-label { color: #06C755; }
+  .flow-branch-item .branch-text { font-size: 11px; color: #555; line-height: 1.3; }
+
+  .mock-note {
+    background: rgba(245,158,11,0.1);
+    border: 1px dashed rgba(245,158,11,0.3);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    color: #fbbf24;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .mock-note strong { color: #fcd34d; }
 </style>
 </head>
 <body>
-<a href="index.html" style="position:fixed;top:16px;left:16px;z-index:9999;background:#0969da;color:#fff;text-decoration:none;padding:8px 16px;border-radius:8px;font-family:sans-serif;font-size:14px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,0.2);">← メニューに戻る</a>
 
-
-<div class="demo-wrapper">
-  <!-- LEFT INFO PANEL -->
-  <div class="demo-info">
-    <div class="demo-logo">LINE Mini App Demo</div>
-    <div class="demo-title">求職者<span>マイページ</span><br>操作デモ</div>
-    <div class="demo-desc">求職者が実際に使うLINEミニアプリのUIをそのまま体験できます。各タブをタップして操作してください。</div>
-    <div class="demo-steps">
-      <div class="demo-step"><div class="step-num">1</div><div class="step-text"><strong style="color:#fff;">求人タブ</strong> — ○/×/△をタップして意向回答。全件回答すると完了メッセージ。</div></div>
-      <div class="demo-step"><div class="step-num">2</div><div class="step-text"><strong style="color:#fff;">予定タブ</strong> — カレンダーの日付をタップして面談予定を切り替え。4/15を選択すると別の予定。</div></div>
-      <div class="demo-step"><div class="step-num">3</div><div class="step-text"><strong style="color:#fff;">書類タブ</strong> — ファイルの状態確認・CAコメントを確認。アップロードエリアもタップ可。</div></div>
-      <div class="demo-step"><div class="step-num">4</div><div class="step-text"><strong style="color:#fff;">ホーム</strong> — 各カードから各タブにジャンプ。選考状況の一覧を確認。</div></div>
-    </div>
-    <div class="demo-badge">商談用デモ ver.1.0 — Confidential</div>
-  </div>
-
-  <!-- PHONE -->
-  <div class="phone-wrap">
-    <div class="phone">
-      <div class="notch"></div>
-      <div class="status-bar">
-        <span class="status-time">12:22</span>
-        <span class="status-icons">📶 🔋</span>
-      </div>
-      <div class="line-header">
-        <span class="line-back">＜</span>
-        <span class="line-title" id="hdr">マイページ</span>
-        <div class="line-icons"><span>🔔</span><span>☰</span></div>
-      </div>
-
-      <div class="screen" id="main-screen">
-
-        <!-- HOME -->
-        <div class="screen-content active" id="sc-home">
-          <div class="home-hero">
-            <div class="home-greet">こんにちは、</div>
-            <div class="home-name">山田 太郎 さん</div>
-            <div class="home-sub">本日の面談: 14:00 株式会社テクノス</div>
-          </div>
-          <div class="home-cards">
-            <div class="home-card" onclick="go('jobs')">
-              <div class="hc-icon">💼</div>
-              <div class="hc-title">紹介求人</div>
-              <div class="hc-desc">未回答あり</div>
-              <span class="badge" id="home-badge">3件</span>
-            </div>
-            <div class="home-card" onclick="go('schedule')">
-              <div class="hc-icon">📅</div>
-              <div class="hc-title">面談予定</div>
-              <div class="hc-desc">4/9 14:00</div>
-            </div>
-            <div class="home-card" onclick="go('files')">
-              <div class="hc-icon">📁</div>
-              <div class="hc-title">書類管理</div>
-              <div class="hc-desc">修正依頼あり</div>
-              <span class="badge">1件</span>
-            </div>
-          </div>
-          <div class="home-section">
-            <div class="home-section-title">選考状況</div>
-            <div class="status-item"><div class="s-dot g"></div><div class="s-text">株式会社Mico — 書類選考中</div><div class="s-date">4/5</div></div>
-            <div class="status-item"><div class="s-dot o"></div><div class="s-text">株式会社テクノス — 面接日程調整中</div><div class="s-date">4/3</div></div>
-            <div class="status-item"><div class="s-dot gr"></div><div class="s-text">コンサル株式会社 — 辞退済み</div><div class="s-date">3/28</div></div>
-          </div>
-        </div>
-
-        <!-- JOBS -->
-        <div class="screen-content" id="sc-jobs">
-          <div class="jobs-tabs">
-            <div class="jt active">未回答 <span id="badge-count" style="color:#ff4444;font-weight:700;">3</span></div>
-            <div class="jt" onclick="showToast('回答済み求人を表示します')">回答済み</div>
-            <div class="jt" onclick="showToast('辞退済み求人を表示します')">辞退</div>
-          </div>
-          <div class="alert-banner" id="alert-banner">⚠️ 3件の求人に未回答です。ご回答ください。</div>
-          <div class="job-card">
-            <div class="jc-company">株式会社フューチャーテック</div>
-            <div class="jc-role">カスタマーサクセス / 正社員</div>
-            <div class="jc-tags"><span class="jc-tag green">年収450〜600万</span><span class="jc-tag">リモート可</span><span class="jc-tag">SaaS</span></div>
-            <div class="vote-row">
-              <button class="vbtn maybe" onclick="vote(this,'maybe',0)">△</button>
-              <button class="vbtn no" onclick="vote(this,'no',0)">×</button>
-              <button class="vbtn yes" onclick="vote(this,'yes',0)">○</button>
-            </div>
-          </div>
-          <div class="job-card">
-            <div class="jc-company">株式会社グローバルコム</div>
-            <div class="jc-role">法人営業 / 正社員</div>
-            <div class="jc-tags"><span class="jc-tag green">年収400〜550万</span><span class="jc-tag">大手</span><span class="jc-tag">安定</span></div>
-            <div class="vote-row">
-              <button class="vbtn maybe" onclick="vote(this,'maybe',1)">△</button>
-              <button class="vbtn no" onclick="vote(this,'no',1)">×</button>
-              <button class="vbtn yes" onclick="vote(this,'yes',1)">○</button>
-            </div>
-          </div>
-          <div class="job-card">
-            <div class="jc-company">株式会社NextStep</div>
-            <div class="jc-role">マーケティングマネージャー / 正社員</div>
-            <div class="jc-tags"><span class="jc-tag green">年収500〜700万</span><span class="jc-tag">スタートアップ</span></div>
-            <div class="vote-row">
-              <button class="vbtn maybe" onclick="vote(this,'maybe',2)">△</button>
-              <button class="vbtn no" onclick="vote(this,'no',2)">×</button>
-              <button class="vbtn yes" onclick="vote(this,'yes',2)">○</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- SCHEDULE -->
-        <div class="screen-content" id="sc-schedule">
-          <div class="cal-nav-row">
-            <span class="cal-btn">‹</span>
-            <span class="cal-month">2026年 4月</span>
-            <span class="cal-btn">›</span>
-          </div>
-          <div class="cal-grid">
-            <div class="cd-label">日</div><div class="cd-label">月</div><div class="cd-label">火</div><div class="cd-label">水</div><div class="cd-label">木</div><div class="cd-label">金</div><div class="cd-label">土</div>
-            <div class="cd empty"></div><div class="cd empty"></div><div class="cd empty"></div><div class="cd">1</div><div class="cd">2</div><div class="cd">3</div><div class="cd">4</div>
-            <div class="cd">5</div><div class="cd">6</div><div class="cd today">7</div><div class="cd event" onclick="selDay(this,'9')">9</div><div class="cd">10</div><div class="cd">11</div><div class="cd">12</div>
-            <div class="cd">13</div><div class="cd">14</div><div class="cd event" onclick="selDay(this,'15')">15</div><div class="cd">16</div><div class="cd">17</div><div class="cd">18</div><div class="cd">19</div>
-            <div class="cd">20</div><div class="cd">21</div><div class="cd">22</div><div class="cd">23</div><div class="cd">24</div><div class="cd">25</div><div class="cd">26</div>
-          </div>
-          <div class="schedule-list" id="sched-list">
-            <div class="sl-title">4月9日(水)の予定</div>
-            <div class="sl-item"><div class="sl-time">14:00</div><div><div class="sl-ctitle">株式会社テクノス — 1次面接</div><div class="sl-csub">Web面接 / Zoom</div><span class="sl-badge ok">確定済み</span></div></div>
-            <div class="sl-item"><div class="sl-time">16:00</div><div><div class="sl-ctitle">CA面談（田中）</div><div class="sl-csub">進捗確認・次のステップ</div><span class="sl-badge ok">確定済み</span></div></div>
-          </div>
-          <div class="new-btn" onclick="showToast('📅 カレンダーから空き枠を選択できます')">＋ 新しい面談を予約する</div>
-        </div>
-
-        <!-- FILES -->
-        <div class="screen-content" id="sc-files">
-          <div class="upload-area" onclick="showToast('📎 ファイルを選択してアップロード')">
-            <div class="upload-icon">📎</div>
-            <div class="upload-text">タップしてファイルをアップロード</div>
-            <div class="upload-sub">PDF / Word / JPG 対応</div>
-          </div>
-          <div class="file-sec-title">アップロード済み書類</div>
-          <div class="file-item" onclick="showToast('履歴書を開きます')">
-            <div class="f-icon">📄</div>
-            <div><div class="f-name">履歴書_山田太郎_v2.pdf</div><div class="f-meta">2026/04/03 · 245KB</div></div>
-            <span class="f-status f-ok">確認済み</span>
-          </div>
-          <div class="file-item" onclick="showToast('修正依頼の詳細を確認')">
-            <div class="f-icon">📝</div>
-            <div><div class="f-name">職務経歴書_山田太郎.pdf</div><div class="f-meta">2026/04/01 · 312KB</div></div>
-            <span class="f-status f-rev">修正依頼</span>
-          </div>
-          <div class="file-item" onclick="showToast('CAがレビュー中です')">
-            <div class="f-icon">📋</div>
-            <div><div class="f-name">スキルシート.xlsx</div><div class="f-meta">2026/03/28 · 88KB</div></div>
-            <span class="f-status f-new">レビュー中</span>
-          </div>
-          <div class="ca-comment">💬 <strong>CAよりコメント：</strong><br>職務経歴書の「得意なこと」欄をより具体的にご記載ください。実績数値があるとさらに良いです。</div>
-        </div>
-
-      </div><!-- /screen -->
-
-      <div class="nav-tabs">
-        <div class="nav-tab active" id="tab-home" onclick="go('home')"><span class="nav-tab-icon">🏠</span>ホーム</div>
-        <div class="nav-tab" id="tab-jobs" onclick="go('jobs')"><span class="nav-tab-icon">💼</span>求人</div>
-        <div class="nav-tab" id="tab-schedule" onclick="go('schedule')"><span class="nav-tab-icon">📅</span>予定</div>
-        <div class="nav-tab" id="tab-files" onclick="go('files')"><span class="nav-tab-icon">📁</span>書類</div>
-      </div>
-    </div>
-    <div class="phone-label">各タブ・ボタン・カレンダーをタップして操作</div>
-  </div>
+<div class="header">
+  <h1>人材 LINEミニアプリ × mico engageAI</h1>
+  <div class="subtitle">連携アーキテクチャ & Lightプラン標準パッケージ仕様</div>
+  <div class="badge">MRR ¥100,000</div>
+  <div class="badge highlight">カスタマイズゼロ・即時導入</div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="container">
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('arch')">連携アーキテクチャ</button>
+    <button class="tab-btn" onclick="switchTab('flow')">イベントループ</button>
+    <button class="tab-btn" onclick="switchTab('scope')">機能スコープ</button>
+    <button class="tab-btn" onclick="switchTab('rev')">MRR設計</button>
+    <button class="tab-btn" onclick="switchTab('mock')">UIモック（全画面）</button>
+    <button class="tab-btn" onclick="switchTab('mock-lite')">UIモック（Lite）</button>
+  </div>
+
+  <!-- 1. Architecture -->
+  <div class="tab-content active" id="tab-arch">
+    <div class="arch-section">
+      <h2>システム連携構成（Light標準パッケージ）</h2>
+      <div class="arch-diagram">
+        <!-- User Layer -->
+        <div class="arch-layer user-layer">
+          <div class="layer-icon">👷</div>
+          <div class="layer-title">求職者（LINE）</div>
+          <div class="layer-subtitle">製造業 派遣希望者</div>
+          <ul class="layer-items">
+            <li><span class="dot green"></span>リッチメニュータップで起動</li>
+            <li><span class="dot green"></span>求人一覧を閲覧</li>
+            <li><span class="dot green"></span>いいね！でお気に入り登録</li>
+            <li><span class="dot green"></span>応募ボタンをタップ</li>
+            <li><span class="dot green"></span>Push配信で新着を受信</li>
+          </ul>
+          <div class="layer-note">📱 LINEアプリ内で完結、DL不要</div>
+        </div>
+
+        <!-- Arrow -->
+        <div class="arrow-col">
+          <svg viewBox="0 0 60 40"><path d="M5 20 L45 20" stroke="#64748b" stroke-width="2" fill="none" stroke-dasharray="4,3"/><polygon points="45,14 55,20 45,26" fill="#64748b"/></svg>
+          <div class="arrow-label">リッチメニュー<br/>起動</div>
+          <svg viewBox="0 0 60 40"><path d="M55 20 L15 20" stroke="#64748b" stroke-width="2" fill="none" stroke-dasharray="4,3"/><polygon points="15,14 5,20 15,26" fill="#64748b"/></svg>
+          <div class="arrow-label">Push通知<br/>（レコメンド配信）</div>
+        </div>
+
+        <!-- Mini App Layer -->
+        <div class="arch-layer mini-layer">
+          <div class="layer-icon">📱</div>
+          <div class="layer-title">LINEミニアプリ</div>
+          <div class="layer-subtitle">リッチメニュー内に実装</div>
+          <ul class="layer-items">
+            <li><span class="dot blue"></span>求人カタログ表示</li>
+            <li><span class="dot blue"></span>いいね！ボタン</li>
+            <li><span class="dot blue"></span>応募ボタン</li>
+            <li><span class="dot amber"></span>イベント発火（お気に入り/応募）</li>
+            <li><span class="dot amber"></span>求人の自動並べ替え</li>
+          </ul>
+          <div class="layer-note">⚙️ UIは標準テンプレ、カスタマイズなし</div>
+        </div>
+
+        <!-- Arrow -->
+        <div class="arrow-col">
+          <svg viewBox="0 0 60 40"><path d="M5 20 L45 20" stroke="#64748b" stroke-width="2" fill="none" stroke-dasharray="4,3"/><polygon points="45,14 55,20 45,26" fill="#64748b"/></svg>
+          <div class="arrow-label">イベント送信<br/>（お気に入り/応募）</div>
+          <svg viewBox="0 0 60 40"><path d="M55 20 L15 20" stroke="#64748b" stroke-width="2" fill="none" stroke-dasharray="4,3"/><polygon points="15,14 5,20 15,26" fill="#64748b"/></svg>
+          <div class="arrow-label">求人カタログ<br/>レコメンド結果</div>
+        </div>
+
+        <!-- ME Layer -->
+        <div class="arch-layer me-layer">
+          <div class="layer-icon">🤖</div>
+          <div class="layer-title">mico engageAI</div>
+          <div class="layer-subtitle">バックエンド AI Engine</div>
+          <ul class="layer-items">
+            <li><span class="dot purple"></span>求人カタログ取得（スクレイピング）</li>
+            <li><span class="dot purple"></span>イベント学習（お気に入り/応募）</li>
+            <li><span class="dot purple"></span>レコメンド配信（Push）</li>
+            <li><span class="dot purple"></span>求人並び順の最適化</li>
+          </ul>
+          <div class="layer-note">🎯 既存MEの機能で完結（新規開発最小）</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Event Loop -->
+  <div class="tab-content" id="tab-flow">
+    <div class="flow-section">
+      <h2>イベント駆動ループ（お気に入り/応募 → レコメンド最適化）</h2>
+
+      <div class="flow-grid">
+        <div class="flow-card card-green">
+          <div class="flow-num">1</div>
+          <h3>求人カタログ自動取得</h3>
+          <p>MEが日総工産の求人サイトをスクレイピング。取得した求人データをミニアプリのカタログに反映。</p>
+          <span class="tech-tag">ME Scraping</span>
+          <span class="tech-tag">定期バッチ</span>
+        </div>
+        <div class="flow-card card-blue">
+          <div class="flow-num">2</div>
+          <h3>求人表示</h3>
+          <p>求職者がリッチメニュータップでミニアプリ起動。カタログから求人一覧を表示。UI は標準テンプレのまま。</p>
+          <span class="tech-tag">LIFF</span>
+          <span class="tech-tag">標準UI</span>
+        </div>
+        <div class="flow-card card-amber">
+          <div class="flow-num">3</div>
+          <h3>イベント発火</h3>
+          <p>求職者が「いいね！」・「求人詳細を見る」ボタンをタップ。イベントログをMEに送信してフィードバック化。</p>
+          <span class="tech-tag">お気に入り</span>
+          <span class="tech-tag">応募タップ</span>
+          <span class="tech-tag">行動ログ</span>
+        </div>
+        <div class="flow-card card-purple">
+          <div class="flow-num">4</div>
+          <h3>レコメンド + 並べ替え</h3>
+          <p>MEがイベントから嗜好を学習。① 求人の並び順を自動最適化 ② 新着求人をPush配信 の2経路でリーチ。</p>
+          <span class="tech-tag">ME Recommend</span>
+          <span class="tech-tag">Push配信</span>
+          <span class="tech-tag">並び順最適化</span>
+        </div>
+      </div>
+
+      <div class="loop-wrap">
+        <div class="loop-title">🔄 データの流れ（1サイクル）</div>
+        <div class="loop-grid">
+          <div class="loop-step action">
+            <div class="icon">👆</div>
+            <div class="title">タップ</div>
+            <div class="sub">いいね！/ 求人詳細</div>
+          </div>
+          <div class="loop-arrow">→</div>
+          <div class="loop-step event">
+            <div class="icon">📡</div>
+            <div class="title">イベント発火</div>
+            <div class="sub">MEにログ送信</div>
+          </div>
+          <div class="loop-arrow">→</div>
+          <div class="loop-step ai">
+            <div class="icon">🤖</div>
+            <div class="title">AI学習</div>
+            <div class="sub">嗜好を解析</div>
+          </div>
+          <div class="loop-arrow">→</div>
+          <div class="loop-step output">
+            <div class="icon">🎯</div>
+            <div class="title">配信 + 並べ替え</div>
+            <div class="sub">Push + カタログ最適化</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Scope -->
+  <div class="tab-content" id="tab-scope">
+    <div class="scope-section">
+      <h2>Light標準パッケージ 機能スコープ</h2>
+      <table class="scope-table">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th style="width:22%">機能</th>
+            <th style="width:120px">含む/含まない</th>
+            <th>詳細</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>リッチメニューへのミニアプリ実装</td>
+            <td><span class="scope-badge include">含む</span></td>
+            <td>LINE公式アカウントのリッチメニューにミニアプリを埋め込み。タップで起動。</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>求人カタログ表示</td>
+            <td><span class="scope-badge include">含む</span></td>
+            <td>MEのスクレイピングで取得した求人を一覧表示。標準UIテンプレを使用。</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>いいね！ボタン</td>
+            <td><span class="scope-badge include">含む</span></td>
+            <td>いいね！ボタンをお気に入り登録のトリガーとして機能化。</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>応募ボタン</td>
+            <td><span class="scope-badge include">含む</span></td>
+            <td>求人カードに応募ボタン。タップで応募イベントを発火。</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>イベント発火（お気に入り・応募）</td>
+            <td><span class="scope-badge include">含む</span></td>
+            <td>タップ操作をME側にイベントログとして送信。レコメンドのインプットに。</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>レコメンド配信（Push）</td>
+            <td><span class="scope-badge include">含む</span></td>
+            <td>MEのレコメンドエンジンが新着求人をPush配信。既存ME機能を利用。</td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td>求人の自動並べ替え</td>
+            <td><span class="scope-badge include">含む</span></td>
+            <td>お気に入り履歴からカタログの並び順をAIで最適化。</td>
+          </tr>
+          <tr>
+            <td>8</td>
+            <td>UIカスタマイズ</td>
+            <td><span class="scope-badge exclude">含まない</span></td>
+            <td>カラーリング、レイアウト変更などは標準パッケージの範囲外。</td>
+          </tr>
+          <tr>
+            <td>9</td>
+            <td>AIチャット（求職者対応）</td>
+            <td><span class="scope-badge exclude">含まない</span></td>
+            <td>Standardプラン以上。</td>
+          </tr>
+          <tr>
+            <td>10</td>
+            <td>応募フロー（スタッフID分岐・書類提出等）</td>
+            <td><span class="scope-badge exclude">含まない</span></td>
+            <td>応募ボタンはイベント発火のみ。本格的な応募フローはEnterprise。</td>
+          </tr>
+          <tr>
+            <td>11</td>
+            <td>ATS/CRM連携</td>
+            <td><span class="scope-badge exclude">含まない</span></td>
+            <td>Enterpriseプラン。</td>
+          </tr>
+          <tr>
+            <td>12</td>
+            <td>面談予約カレンダー</td>
+            <td><span class="scope-badge exclude">含まない</span></td>
+            <td>Enterpriseプラン。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. Revenue Model -->
+  <div class="tab-content" id="tab-rev">
+    <div class="rev-section">
+      <h2>プラン設計</h2>
+      <div class="rev-grid">
+        <div class="rev-card recommended">
+          <div class="plan-name">Light</div>
+          <div class="plan-desc">標準パッケージ / カスタマイズなし</div>
+          <div class="price">¥100,000</div>
+          <p style="font-size:11px; color:#64748b; margin:8px 0 16px">/月</p>
+          <ul>
+            <li>RMにミニアプリ実装</li>
+            <li>カタログから求人表示</li>
+            <li>いいね！</li>
+            <li>応募ボタン（イベント発火）</li>
+            <li>レコメンド配信（Push）</li>
+            <li>求人の自動並べ替え</li>
+            <li class="ex">UIカスタマイズ</li>
+            <li class="ex">AIチャット</li>
+            <li class="ex">ATS連携</li>
+          </ul>
+        </div>
+        <div class="rev-card">
+          <div class="plan-name">Standard</div>
+          <div class="plan-desc">拡張機能あり</div>
+          <div class="price">¥200,000</div>
+          <p style="font-size:11px; color:#64748b; margin:8px 0 16px">/月</p>
+          <ul>
+            <li>Light全機能</li>
+            <li>AIチャット（求職者対応）</li>
+            <li>軽度のUIカスタマイズ</li>
+            <li>月次レポート</li>
+            <li>基本的な応募フロー</li>
+          </ul>
+        </div>
+        <div class="rev-card">
+          <div class="plan-name">Enterprise</div>
+          <div class="plan-desc">フルカスタム</div>
+          <div class="price">¥300,000〜</div>
+          <p style="font-size:11px; color:#64748b; margin:8px 0 16px">/月</p>
+          <ul>
+            <li>Standard全機能</li>
+            <li>ATS/CRM連携</li>
+            <li>面談予約カレンダー</li>
+            <li>スタッフID分岐フロー</li>
+            <li>書類提出・マイページ</li>
+            <li>専任サポート</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Mock -->
+  <div class="tab-content" id="tab-mock">
+    <div class="mock-section">
+      <h2>UIモック（4画面）</h2>
+      <div class="mock-note">
+        <strong>📌 Lightプランのスコープ</strong><br>
+        Lightプランで提供する標準パッケージは主に <strong>② 求人一覧</strong> の画面です（リッチメニュー内に実装、カタログ表示、いいね！でお気に入り、求人詳細ボタン）。
+        ①③④の画面はStandard/Enterpriseプランでの追加オプション扱いです。
+      </div>
+
+      <div class="mock-wrap">
+
+        <!-- SCREEN 1: HOME -->
+        <div class="phone-wrap">
+          <div class="screen-label">① ホーム画面（Standard+）</div>
+          <div class="phone">
+            <div class="status-bar">
+              <span class="time">9:41</span>
+              <div class="icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+            </div>
+            <div class="app-header">
+              <h1>🏠 マイページ</h1>
+              <span class="menu">≡</span>
+            </div>
+            <div class="content">
+              <div class="home-hero">
+                <div class="greeting">おはようございます</div>
+                <div class="name">山田 太郎 さん</div>
+                <div class="status-chips">
+                  <span class="status-chip">スタッフID: NS-00123</span>
+                  <span class="status-chip alert">⚡ 選考中 2件</span>
+                </div>
+              </div>
+              <div class="section-card">
+                <div class="section-card-header"><h3>クイックアクション</h3></div>
+                <div class="quick-action-row">
+                  <button class="quick-action-btn"><span>🔍</span><span>求人を探す</span></button>
+                  <button class="quick-action-btn secondary"><span>📄</span><span>選考状況</span></button>
+                  <button class="quick-action-btn secondary"><span>📅</span><span>面談予定</span></button>
+                  <button class="quick-action-btn secondary"><span>📷</span><span>書類提出</span></button>
+                </div>
+              </div>
+              <div class="section-card">
+                <div class="section-card-header"><h3>📋 選考状況</h3><span class="more">すべて見る ›</span></div>
+                <div class="process-row">
+                  <span class="process-icon">🏭</span>
+                  <div class="process-info">
+                    <div class="process-title">製造スタッフ（神奈川）</div>
+                    <div class="process-sub">日総工産 横浜工場 · 応募：4/10</div>
+                  </div>
+                  <span class="process-badge badge-applied">書類選考</span>
+                </div>
+                <div class="process-row">
+                  <span class="process-icon">⚙️</span>
+                  <div class="process-info">
+                    <div class="process-title">組立作業スタッフ</div>
+                    <div class="process-sub">日総工産 川崎工場 · 応募：4/8</div>
+                  </div>
+                  <span class="process-badge badge-interview">面談確定</span>
+                </div>
+              </div>
+              <div class="section-card">
+                <div class="section-card-header"><h3>📅 次回面談</h3></div>
+                <div class="process-row">
+                  <span class="process-icon">📍</span>
+                  <div class="process-info">
+                    <div class="process-title">4月18日（金）14:00〜</div>
+                    <div class="process-sub">日総工産 川崎工場 / Web面談</div>
+                  </div>
+                  <span class="process-badge badge-interview">確定済</span>
+                </div>
+              </div>
+            </div>
+            <div class="bottom-nav">
+              <div class="tab-item active"><span class="tab-icon">🏠</span><span class="tab-label">ホーム</span></div>
+              <div class="tab-item"><span class="tab-icon">💼</span><span class="tab-label">求人</span></div>
+              <div class="tab-item"><span class="tab-icon">📅</span><span class="tab-label">予定</span></div>
+              <div class="tab-item"><span class="tab-icon">📄</span><span class="tab-label">書類</span></div>
+            </div>
+            <div class="home-indicator"><div class="home-indicator-bar"></div></div>
+          </div>
+        </div>
+
+        <!-- SCREEN 2: JOBS (Light) -->
+        <div class="phone-wrap">
+          <div class="screen-label">② 求人一覧（Light ★）</div>
+          <div class="phone">
+            <div class="status-bar">
+              <span class="time">9:41</span>
+              <div class="icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+            </div>
+            <div class="app-header">
+              <h1>💼 求人を探す</h1>
+              <span class="menu">≡</span>
+            </div>
+            <div class="content">
+              <div class="search-bar">
+                <input class="search-input" type="text" placeholder="🔍 職種・勤務地で検索" readonly>
+                <button class="filter-btn">絞り込み</button>
+              </div>
+              <div class="job-filters">
+                <span class="filter-chip active">📍 神奈川</span>
+                <span class="filter-chip">🏭 製造</span>
+                <span class="filter-chip">💰 時給1,300円〜</span>
+                <span class="filter-chip">⏰ 日勤</span>
+                <span class="filter-chip">🚗 車通勤可</span>
+              </div>
+              <div class="jobs-list">
+                <div class="job-card">
+                  <div class="job-card-top">
+                    <div class="job-title">製造スタッフ（車体部品の検査・組立）</div>
+                    <span class="job-new">NEW</span>
+                  </div>
+                  <div class="job-tags">
+                    <span class="job-tag">🏭 製造・加工</span>
+                    <span class="job-tag">🚗 車通勤可</span>
+                    <span class="job-tag">🌅 日勤のみ</span>
+                  </div>
+                  <div class="job-salary">時給 1,500円〜</div>
+                  <div class="job-footer">
+                    <div class="job-location">📍 神奈川県横浜市</div>
+                    <div class="reaction-btns">
+                      <button class="like-btn active"><span class="heart">❤</span>いいね！</button>
+                    </div>
+                  </div>
+                  <button class="apply-btn">📄 求人詳細を見る</button>
+                </div>
+                <div class="job-card" style="border-left-color: #2196f3;">
+                  <div class="job-card-top">
+                    <div class="job-title">倉庫内ピッキング・仕分け作業</div>
+                  </div>
+                  <div class="job-tags">
+                    <span class="job-tag">📦 物流・倉庫</span>
+                    <span class="job-tag">🚃 駅チカ5分</span>
+                    <span class="job-tag">👔 未経験歓迎</span>
+                  </div>
+                  <div class="job-salary">時給 1,350円〜</div>
+                  <div class="job-footer">
+                    <div class="job-location">📍 神奈川県川崎市</div>
+                    <div class="reaction-btns">
+                      <button class="like-btn"><span class="heart">♡</span>いいね！</button>
+                    </div>
+                  </div>
+                  <button class="apply-btn">📄 求人詳細を見る</button>
+                </div>
+                <div class="job-card">
+                  <div class="job-card-top">
+                    <div class="job-title">電子部品の検査スタッフ（座り作業・軽作業）</div>
+                  </div>
+                  <div class="job-tags">
+                    <span class="job-tag">⚙️ 電子・半導体</span>
+                    <span class="job-tag">💺 座り作業</span>
+                    <span class="job-tag">👩 女性活躍中</span>
+                  </div>
+                  <div class="job-salary">時給 1,400円〜</div>
+                  <div class="job-footer">
+                    <div class="job-location">📍 神奈川県相模原市</div>
+                    <div class="reaction-btns">
+                      <button class="like-btn"><span class="heart">♡</span>いいね！</button>
+                    </div>
+                  </div>
+                  <button class="apply-btn">📄 求人詳細を見る</button>
+                </div>
+              </div>
+            </div>
+            <div class="bottom-nav">
+              <div class="tab-item"><span class="tab-icon">🏠</span><span class="tab-label">ホーム</span></div>
+              <div class="tab-item active"><span class="tab-icon">💼</span><span class="tab-label">求人</span></div>
+              <div class="tab-item"><span class="tab-icon">📅</span><span class="tab-label">予定</span></div>
+              <div class="tab-item"><span class="tab-icon">📄</span><span class="tab-label">書類</span></div>
+            </div>
+            <div class="home-indicator"><div class="home-indicator-bar"></div></div>
+          </div>
+        </div>
+
+        <!-- SCREEN 3: APPLY FLOW -->
+        <div class="phone-wrap">
+          <div class="screen-label">③ 応募フロー（Enterprise）</div>
+          <div class="phone">
+            <div class="status-bar">
+              <span class="time">9:41</span>
+              <div class="icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+            </div>
+            <div class="app-header">
+              <span class="back">‹</span>
+              <h1>応募する</h1>
+            </div>
+            <div class="content">
+              <div class="section-card" style="margin-top: 12px;">
+                <div style="padding: 14px; border-bottom: 1px solid #f0f0f0;">
+                  <div style="font-size: 13px; color: #888; margin-bottom: 4px;">応募する求人</div>
+                  <div style="font-size: 15px; font-weight: 700; color: #111;">製造スタッフ（車体部品の検査・組立）</div>
+                  <div style="font-size: 12px; color: #666; margin-top: 4px;">📍 神奈川県横浜市 ／ 時給 1,500円〜</div>
+                </div>
+              </div>
+              <div class="flow-container">
+                <div class="flow-title">✅ スタッフID確認中...</div>
+                <div class="flow-step">
+                  <div class="step-num">1</div>
+                  <div class="step-text">「応募する」ボタンを押下</div>
+                </div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-step">
+                  <div class="step-num">2</div>
+                  <div class="step-text">Micoシステムでスタッフ<br>ID保有状況を自動確認</div>
+                </div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-branch">
+                  <div class="flow-branch-item new">
+                    <div class="branch-label">新規の方</div>
+                    <div class="branch-text">スタッフIDなし<br>↓<br>本登録ページへ誘導</div>
+                  </div>
+                  <div class="flow-branch-item existing">
+                    <div class="branch-label">登録済みの方</div>
+                    <div class="branch-text">スタッフIDあり<br>↓<br>担当部門に自動通知</div>
+                  </div>
+                </div>
+                <div style="margin-top: 20px;">
+                  <div class="section-card">
+                    <div style="padding: 16px; text-align: center;">
+                      <div style="font-size: 40px; margin-bottom: 8px;">🎉</div>
+                      <div style="font-size: 15px; font-weight: 700; color: #06C755; margin-bottom: 6px;">応募受付完了！</div>
+                      <div style="font-size: 12px; color: #666; line-height: 1.6;">担当部門へ連絡されました。<br>選考結果はLINEで通知します。</div>
+                    </div>
+                  </div>
+                  <button class="apply-btn" style="margin: 0 12px; width: calc(100% - 24px);">🏠 ホームへ戻る</button>
+                </div>
+              </div>
+            </div>
+            <div class="bottom-nav">
+              <div class="tab-item"><span class="tab-icon">🏠</span><span class="tab-label">ホーム</span></div>
+              <div class="tab-item active"><span class="tab-icon">💼</span><span class="tab-label">求人</span></div>
+              <div class="tab-item"><span class="tab-icon">📅</span><span class="tab-label">予定</span></div>
+              <div class="tab-item"><span class="tab-icon">📄</span><span class="tab-label">書類</span></div>
+            </div>
+            <div class="home-indicator"><div class="home-indicator-bar"></div></div>
+          </div>
+        </div>
+
+        <!-- SCREEN 4: MYPAGE -->
+        <div class="phone-wrap">
+          <div class="screen-label">④ 予定・書類（Enterprise）</div>
+          <div class="phone">
+            <div class="status-bar">
+              <span class="time">9:41</span>
+              <div class="icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+            </div>
+            <div class="app-header">
+              <h1>📄 書類・マイページ</h1>
+            </div>
+            <div class="content">
+              <div class="mypage-avatar">
+                <div class="avatar-circle">👤</div>
+                <div class="mypage-name">山田 太郎</div>
+                <div class="mypage-id">スタッフID: NS-00123</div>
+              </div>
+              <div class="mypage-section">
+                <div class="mypage-section-title">👤 プロフィール</div>
+                <div class="mypage-row">
+                  <span class="icon">📧</span>
+                  <span class="label">メールアドレス</span>
+                  <span class="value">yamada@example.com</span>
+                  <span class="chevron">›</span>
+                </div>
+                <div class="mypage-row">
+                  <span class="icon">📍</span>
+                  <span class="label">希望勤務地</span>
+                  <span class="value">神奈川県</span>
+                  <span class="chevron">›</span>
+                </div>
+                <div class="mypage-row">
+                  <span class="icon">🚃</span>
+                  <span class="label">通勤希望距離</span>
+                  <span class="value">駅から30分以内</span>
+                  <span class="chevron">›</span>
+                </div>
+              </div>
+              <div class="mypage-section">
+                <div class="mypage-section-title">📷 書類提出</div>
+                <div class="upload-area">
+                  <div class="upload-icon">📸</div>
+                  <div class="upload-text">顔写真をアップロード<br>（証明写真サイズ推奨）</div>
+                  <div class="upload-hint">タップして写真を選択・撮影</div>
+                </div>
+              </div>
+              <div class="mypage-section">
+                <div class="mypage-section-title">📅 面談予定</div>
+                <div class="interview-card" style="margin: 0; border-radius: 0; box-shadow: none; border-left: none; border-top: 0;">
+                  <div class="interview-date">
+                    <div class="day">18</div>
+                    <div class="weekday">金</div>
+                  </div>
+                  <div class="interview-info">
+                    <div class="company">日総工産 川崎工場</div>
+                    <div class="type">面談（Web）</div>
+                    <div class="time">🕐 14:00〜15:00</div>
+                    <div class="loc">📍 Google Meetにて</div>
+                  </div>
+                </div>
+              </div>
+              <div class="mypage-section" style="margin-bottom: 20px;">
+                <div class="mypage-section-title">📋 応募履歴</div>
+                <div class="process-row">
+                  <span class="process-icon">🏭</span>
+                  <div class="process-info">
+                    <div class="process-title">製造スタッフ（横浜）</div>
+                    <div class="process-sub">応募日: 2026/04/10</div>
+                  </div>
+                  <span class="process-badge badge-applied">書類選考</span>
+                </div>
+                <div class="process-row">
+                  <span class="process-icon">⚙️</span>
+                  <div class="process-info">
+                    <div class="process-title">組立作業（川崎）</div>
+                    <div class="process-sub">応募日: 2026/04/08</div>
+                  </div>
+                  <span class="process-badge badge-interview">面談確定</span>
+                </div>
+              </div>
+            </div>
+            <div class="bottom-nav">
+              <div class="tab-item"><span class="tab-icon">🏠</span><span class="tab-label">ホーム</span></div>
+              <div class="tab-item"><span class="tab-icon">💼</span><span class="tab-label">求人</span></div>
+              <div class="tab-item"><span class="tab-icon">📅</span><span class="tab-label">予定</span></div>
+              <div class="tab-item active"><span class="tab-icon">📄</span><span class="tab-label">書類</span></div>
+            </div>
+            <div class="home-indicator"><div class="home-indicator-bar"></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+  <div class="tab-content" id="tab-mock-lite">
+    <div class="mock-section">
+      <h2>UIモック（Liteプラン）— マッチングアプリ風スワイプUI</h2>
+      <div class="mock-note">
+        <strong>💡 Webサイトではできない体験を提供する</strong><br>
+        求人を<strong>1件ずつ</strong>フルスクリーン表示。<strong>右スワイプ＝いいね！／左スワイプ＝微妙</strong>で直感的に評価。<br>
+        微妙評価が出た時に<strong>たまにポップアップ</strong>で「微妙ポイント」を選択させ、<strong>MEのカスタム属性を更新</strong>。次のPush配信・並べ替え精度が上がる。<br>
+        <span style="color:#94a3b8;">※リッチメニュー → WebページではなくLIFFならではの没入UXで、リテンション・CVRを最大化。</span>
+      </div>
+
+      <div class="mock-wrap">
+
+        <!-- STATE 1: SWIPE IN PROGRESS (右スワイプ中) -->
+        <div class="phone-wrap">
+          <div class="screen-label">スワイプで評価（右＝いいね！ / 左＝微妙）</div>
+          <div class="phone">
+            <div class="status-bar">
+              <span class="time">9:41</span>
+              <div class="icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+            </div>
+            <div class="app-header">
+              <h1>💼 あなたにピッタリの求人</h1>
+              <span class="menu">≡</span>
+            </div>
+            <div class="content">
+              <div class="swipe-progress">
+                <span class="progress-count">本日 3 / 20件</span>
+                <div class="progress-bar"><div class="progress-fill" style="width: 15%;"></div></div>
+              </div>
+              <div class="swipe-hint">
+                <span class="hint-left">👈 微妙</span>
+                <span class="hint-center">スワイプで評価</span>
+                <span class="hint-right">いいね！ 👉</span>
+              </div>
+              <div class="card-stack">
+                <!-- Behind cards (hint) -->
+                <div class="swipe-card behind-2">
+                  <div class="card-image-big img-electronics">⚙️</div>
+                </div>
+                <div class="swipe-card behind-1">
+                  <div class="card-image-big img-warehouse">📦</div>
+                </div>
+                <!-- Main card tilted right (being liked) -->
+                <div class="swipe-card main tilt-right">
+                  <div class="swipe-overlay like-overlay">❤ いいね！</div>
+                  <div class="card-image-big img-factory">
+                    <span class="image-badge">NEW</span>
+                    <span class="image-count">1 / 5</span>
+                    🏭
+                  </div>
+                  <div class="card-body">
+                    <div class="card-title-big">製造スタッフ（車体部品の検査・組立）</div>
+                    <div class="card-salary-big">時給 1,500円〜 <span style="font-size:11px; color:#888; font-weight:500;">月収例 28万円</span></div>
+                    <div class="card-location-big">📍 神奈川県横浜市 · 車通勤OK · 日勤のみ</div>
+                    <div class="card-tags-big">
+                      <span class="c-tag">🏭 製造・加工</span>
+                      <span class="c-tag">🚗 車通勤可</span>
+                      <span class="c-tag">🌅 日勤のみ</span>
+                      <span class="c-tag">🏠 寮完備</span>
+                    </div>
+                    <div class="card-highlight">💡 AIのおすすめポイント：あなたが過去いいね！した求人と類似度 <strong>92%</strong></div>
+                  </div>
+                </div>
+              </div>
+              <div class="swipe-actions">
+                <button class="action-btn pass" title="微妙">✕</button>
+                <button class="action-btn detail" title="詳細">📄</button>
+                <button class="action-btn super" title="気になる">⭐</button>
+                <button class="action-btn like" title="いいね！">❤</button>
+              </div>
+            </div>
+            <div class="home-indicator"><div class="home-indicator-bar"></div></div>
+          </div>
+        </div>
+
+        <!-- STATE 2: 微妙ポイント POPUP -->
+        <div class="phone-wrap">
+          <div class="screen-label">微妙ポイント選択 → MEのカスタム属性更新</div>
+          <div class="phone">
+            <div class="status-bar">
+              <span class="time">9:41</span>
+              <div class="icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+            </div>
+            <div class="app-header">
+              <h1>💼 あなたにピッタリの求人</h1>
+              <span class="menu">≡</span>
+            </div>
+            <div class="content" style="position: relative;">
+              <div class="swipe-progress">
+                <span class="progress-count">本日 4 / 20件</span>
+                <div class="progress-bar"><div class="progress-fill" style="width: 20%;"></div></div>
+              </div>
+              <div class="swipe-hint">
+                <span class="hint-left">👈 微妙</span>
+                <span class="hint-center">スワイプで評価</span>
+                <span class="hint-right">いいね！ 👉</span>
+              </div>
+              <div class="card-stack" style="filter: blur(1px);">
+                <div class="swipe-card behind-2">
+                  <div class="card-image-big img-auto">🚗</div>
+                </div>
+                <div class="swipe-card behind-1">
+                  <div class="card-image-big img-electronics">⚙️</div>
+                </div>
+                <div class="swipe-card main">
+                  <div class="card-image-big img-warehouse">
+                    <span class="image-badge">未経験歓迎</span>
+                    <span class="image-count">2 / 5</span>
+                    📦
+                  </div>
+                  <div class="card-body">
+                    <div class="card-title-big">倉庫内ピッキング・仕分け作業</div>
+                    <div class="card-salary-big">時給 1,350円〜</div>
+                    <div class="card-location-big">📍 神奈川県川崎市</div>
+                  </div>
+                </div>
+              </div>
+              <!-- AI learning ping -->
+              <div class="ai-ping">🤖 ME学習中…</div>
+              <!-- Popup overlay -->
+              <div class="popup-overlay">
+                <div class="popup">
+                  <div class="popup-handle"></div>
+                  <div class="popup-icon">🤔</div>
+                  <div class="popup-title">どこが微妙でしたか？</div>
+                  <div class="popup-subtitle">回答いただくと、次の求人があなた好みに近づきます（5件に1回）</div>
+                  <div class="popup-options">
+                    <button class="popup-option"><span class="opt-icon">📍</span>勤務地が遠い</button>
+                    <button class="popup-option selected"><span class="opt-icon">💰</span>時給が低い</button>
+                    <button class="popup-option"><span class="opt-icon">🏭</span>職種が合わない</button>
+                    <button class="popup-option"><span class="opt-icon">⏰</span>勤務時間が合わない</button>
+                    <button class="popup-option"><span class="opt-icon">🏠</span>寮なしは厳しい</button>
+                    <button class="popup-option"><span class="opt-icon">💭</span>その他</button>
+                  </div>
+                  <div class="popup-actions">
+                    <button class="popup-skip">スキップ</button>
+                    <button class="popup-submit">回答してME更新 →</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="home-indicator"><div class="home-indicator-bar"></div></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Value prop under the mock -->
+      <div class="mock-note" style="margin-top: 24px; background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(6,199,85,0.1)); border-color: rgba(124,58,237,0.3);">
+        <strong>🚀 このUIの価値（Webサイトではできないこと）</strong><br>
+        ① <strong>1件ずつのフォーカス表示</strong> → 画像・条件が目に入り求職者が「選ぶ」感覚に。タップ疲れゼロ。<br>
+        ② <strong>スワイプ＝高速フィードバック</strong> → 1人あたり20件/日の評価データが自然に蓄積。<br>
+        ③ <strong>微妙ポイント選択</strong> → 暗黙の「No」が明示的な属性データに。MEのカスタム属性が即更新され、翌日のPush／並べ替え精度が上がる。<br>
+        ④ <strong>スワイプ疲労対策</strong> → 20件でストップ、明日また続きから（Pushで呼び戻し）。リテンション設計。
+      </div>
+
+    </div>
+  </div>
 
 <script>
-var titles={home:'マイページ',jobs:'紹介求人',schedule:'面談予定',files:'書類管理'};
-var votes={};
-
-function go(tab){
-  ['home','jobs','schedule','files'].forEach(function(t){
-    document.getElementById('sc-'+t).classList.remove('active');
-    document.getElementById('tab-'+t).classList.remove('active');
-  });
-  document.getElementById('sc-'+tab).classList.add('active');
-  document.getElementById('tab-'+tab).classList.add('active');
-  document.getElementById('hdr').textContent=titles[tab];
-  document.getElementById('main-screen').scrollTop=0;
-}
-
-function vote(btn,type,id){
-  var card=btn.closest('.job-card');
-  card.querySelectorAll('.vbtn').forEach(function(b){
-    b.className=b.className.replace(/\bsel-\w+/g,'').trim();
-  });
-  btn.classList.add('sel-'+type);
-  votes[id]=type;
-  var rem=3-Object.keys(votes).length;
-  var banner=document.getElementById('alert-banner');
-  var bc=document.getElementById('badge-count');
-  var hb=document.getElementById('home-badge');
-  if(rem>0){
-    banner.innerHTML='⚠️ '+rem+'件の求人に未回答です。ご回答ください。';
-    bc.textContent=rem;
-    hb.textContent=rem+'件';
-  } else {
-    banner.style.background='#e6f9ee';
-    banner.style.color='#0a7c3a';
-    banner.style.borderBottom='1px solid #b2f0cb';
-    banner.textContent='✅ すべての求人に回答しました！CAから連絡をお待ちください。';
-    bc.textContent='0';
-    hb.textContent='完了';
-    hb.style.background='#06c755';
-  }
-  var msg=type==='yes'?'○ 応募意向あり':(type==='no'?'× 見送り':'△ 保留');
-  showToast(msg+' — 回答を送信しました');
-}
-
-function selDay(el,day){
-  document.querySelectorAll('.cd').forEach(function(d){
-    if(!d.classList.contains('today'))d.classList.remove('selected');
-  });
-  el.classList.add('selected');
-  var list=document.getElementById('sched-list');
-  if(day==='15'){
-    list.innerHTML='<div class="sl-title">4月15日(水)の予定</div><div class="sl-item"><div class="sl-time">10:00</div><div><div class="sl-ctitle">株式会社Mico — 2次面接</div><div class="sl-csub">対面 / 渋谷オフィス</div><span class="sl-badge pend">日程調整中</span></div></div>';
-  } else {
-    list.innerHTML='<div class="sl-title">4月9日(水)の予定</div><div class="sl-item"><div class="sl-time">14:00</div><div><div class="sl-ctitle">株式会社テクノス — 1次面接</div><div class="sl-csub">Web面接 / Zoom</div><span class="sl-badge ok">確定済み</span></div></div><div class="sl-item"><div class="sl-time">16:00</div><div><div class="sl-ctitle">CA面談（田中）</div><div class="sl-csub">進捗確認・次のステップ</div><span class="sl-badge ok">確定済み</span></div></div>';
-  }
-}
-
-var toastTimer;
-function showToast(msg){
-  var t=document.getElementById('toast');
-  t.textContent=msg;
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(function(){t.classList.remove('show');},2000);
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  event.target.classList.add('active');
 }
 </script>
+
 </body>
 </html>
