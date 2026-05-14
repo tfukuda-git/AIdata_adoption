@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ME×流入パラメータ連携 社内対応ガイド</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif;
+    color: #1f2937;
+    background: #f9fafb;
+    line-height: 1.65;
+    padding: 32px 16px;
+  }
+  .container {
+    max-width: 1120px;
+    margin: 0 auto;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+    color: #ffffff;
+    padding: 28px 40px;
+  }
+  .eyebrow {
+    font-size: 11px; letter-spacing: 4px; font-weight: 700;
+    opacity: 0.85; margin-bottom: 8px;
+  }
+  .header h1 {
+    font-size: 24px; font-weight: 700; margin-bottom: 8px;
+  }
+  .header .subtitle {
+    font-size: 13px; opacity: 0.92;
+  }
+  .header .meta {
+    margin-top: 14px; font-size: 11px; opacity: 0.82;
+  }
+  .content { padding: 32px 40px 16px; }
+  .section { margin-bottom: 36px; }
+  .section-title {
+    font-size: 17px; font-weight: 700; color: #1e40af;
+    border-left: 4px solid #2563eb; padding-left: 12px; margin-bottom: 14px;
+  }
+  .lead {
+    background: #eff6ff; border-radius: 8px; padding: 14px 18px;
+    font-size: 13px; color: #1e3a8a;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; }
+  th, td {
+    text-align: left; padding: 10px 12px;
+    border: 1px solid #e5e7eb; vertical-align: top;
+  }
+  th {
+    background: #f3f4f6; font-weight: 700; color: #374151; font-size: 12px;
+  }
+  td.mono { font-family: "SF Mono", "Monaco", "Consolas", monospace; font-size: 11.5px; }
+  .chip {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px; margin-right: 4px;
+    color: #fff;
+  }
+  .chip-tetori { background: #f59e0b; }
+  .chip-gtm    { background: #4285F4; }
+  .chip-line   { background: #06C755; }
+  .chip-mico   { background: #8b5cf6; }
+  .chip-server { background: #475569; }
+  .chip-ok     { background: #059669; }
+  .chip-ng     { background: #dc2626; }
+  .chip-warn   { background: #d97706; }
+  .two-col {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .three-col {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;
+  }
+  .card {
+    background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .card-title {
+    font-weight: 700; font-size: 13px; color: #111827; margin-bottom: 6px;
+  }
+  .card-body { font-size: 12.5px; color: #4b5563; }
+  .checklist {
+    list-style: none; padding: 0;
+  }
+  .checklist li {
+    padding: 8px 0 8px 30px; position: relative;
+    border-bottom: 1px dashed #e5e7eb; font-size: 13px;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li::before {
+    content: "□"; position: absolute; left: 6px; top: 7px;
+    color: #2563eb; font-size: 14px; font-weight: 700;
+  }
+  .pattern-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;
+  }
+  .pattern {
+    border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;
+  }
+  .pattern-head {
+    background: #1e40af; color: #fff; padding: 10px 14px;
+    font-weight: 700; font-size: 13px;
+  }
+  .pattern-body {
+    padding: 12px 14px; font-size: 12.5px; color: #4b5563;
+    background: #fff;
+  }
+  .pattern-body .label {
+    font-size: 11px; font-weight: 700; color: #6b7280;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-top: 8px;
+  }
+  .pattern-body .ex {
+    font-family: "SF Mono", "Monaco", "Consolas", monospace;
+    font-size: 11px; color: #1f2937; margin-top: 2px;
+    background: #f3f4f6; padding: 4px 8px; border-radius: 4px;
+    word-break: break-all;
+  }
+  .note {
+    background: #fef3c7; border-left: 4px solid #f59e0b;
+    padding: 12px 16px; border-radius: 4px; font-size: 12.5px;
+    color: #78350f; margin-top: 12px;
+  }
+  .note strong { color: #92400e; }
+  .danger {
+    background: #fee2e2; border-left: 4px solid #dc2626;
+    padding: 12px 16px; border-radius: 4px; font-size: 12.5px;
+    color: #7f1d1d; margin-top: 12px;
+  }
+  .danger strong { color: #991b1b; }
+  .footer {
+    background: #f3f4f6; padding: 14px 40px;
+    font-size: 11px; color: #6b7280; text-align: right;
+  }
+  .flow {
+    background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 16px; font-size: 12.5px;
+  }
+  .flow ol {
+    list-style: none; counter-reset: q; padding: 0;
+  }
+  .flow ol li {
+    counter-increment: q; padding: 6px 0 6px 32px; position: relative;
+    color: #374151;
+  }
+  .flow ol li::before {
+    content: "Q" counter(q); position: absolute; left: 0; top: 8px;
+    background: #2563eb; color: #fff; font-size: 10px; font-weight: 700;
+    padding: 2px 6px; border-radius: 3px;
+  }
+  .flow ol li .yes {
+    display: inline-block; margin-left: 8px;
+    font-size: 11px; color: #059669; font-weight: 700;
+  }
+  .flow ol li .no {
+    display: inline-block; margin-left: 8px;
+    font-size: 11px; color: #dc2626; font-weight: 700;
+  }
+  .flow ol li .branch {
+    display: block; margin-top: 4px; padding-left: 8px;
+    border-left: 2px solid #e5e7eb; color: #4b5563;
+  }
+  code {
+    font-family: "SF Mono", "Monaco", "Consolas", monospace;
+    font-size: 11.5px; background: #f3f4f6; padding: 1px 5px; border-radius: 3px;
+    color: #1f2937;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="eyebrow">INTERNAL GUIDE</div>
+    <h1>ME（Mico Engage AI）× 流入パラメータ連携 社内対応ガイド</h1>
+    <div class="subtitle">「LP流入時の情報をLINE経由でMEに引き継ぎたい」系の相談を受けたときの判断軸・制限・必要対応をまとめた一枚資料</div>
+    <div class="meta">作成: 株式会社mico ／ 2026-05-14 ／ v1.0</div>
+  </div>
+
+  <div class="content">
+
+    <!-- 0. 本資料の目的 -->
+    <div class="section">
+      <div class="section-title">0. 本資料の目的</div>
+      <div class="lead">
+        お客様から <strong>「LPやサイト上の情報をLINE流入経由でMEに記録したい」</strong> 系の要望を受けたとき、案件ごとに迷わず判断・見積もり・実装方針を立てられるようにする。要件は案件ごとにバラつくが、<strong>「パラメータ源」「流入経路」「ポップアップツール有無」</strong>の3軸で整理できる。
+      </div>
+    </div>
+
+    <!-- 1. 要件のパターン分類 -->
+    <div class="section">
+      <div class="section-title">1. 要件のパターン分類（3軸で整理）</div>
+      <div class="pattern-grid">
+        <div class="pattern">
+          <div class="pattern-head">軸A：パラメータ源</div>
+          <div class="pattern-body">
+            <div class="label">A1 URLクエリのみ</div>
+            <div class="ex">?utm_source=...&amp;argument=...</div>
+            <div class="label">A2 URL ＋ サイト内DOM情報</div>
+            <div class="ex">求人タイトル / 商品名 / 価格 等</div>
+            <div class="label">A3 URLパスから抽出</div>
+            <div class="ex">/detail/{job_no}/</div>
+          </div>
+        </div>
+        <div class="pattern">
+          <div class="pattern-head">軸B：流入CTAの種類</div>
+          <div class="pattern-body">
+            <div class="label">B1 ポップアップツール経由</div>
+            <div class="ex">TETORI / KARTE / Flipdesk 等</div>
+            <div class="label">B2 サイト固定CTA</div>
+            <div class="ex">ヘッダー・フッターのLINEボタン</div>
+            <div class="label">B3 SPA・動的描画箇所</div>
+            <div class="ex">React/Vue で後挿入</div>
+          </div>
+        </div>
+        <div class="pattern">
+          <div class="pattern-head">軸C：LINE側の受け口</div>
+          <div class="pattern-body">
+            <div class="label">C1 LIFF URL <span class="chip chip-line">推奨</span></div>
+            <div class="ex">https://liff.line.me/...?mc_memo=...</div>
+            <div class="label">C2 友だち追加URL（直接）</div>
+            <div class="ex">line.me/R/... / lin.ee/...</div>
+            <div class="label">C3 中間ページ経由</div>
+            <div class="ex">自社サーバーで保存→LINE転送</div>
+          </div>
+        </div>
+      </div>
+      <div class="note">
+        <strong>典型的な案件パターン：</strong>
+        <span class="chip chip-server">ワールドインテック型</span> A1・A2・A3 × B2 × C1（サーバーサイド付与）／
+        <span class="chip chip-tetori">TETORI型</span> A1・A2・A3 × B1 × C1（GTM+ツールJS付与）／
+        <span class="chip chip-mico">タカミ型</span> A1のみ × B1 × C1（最小構成）
+      </div>
+    </div>
+
+    <!-- 2. 技術的制限事項 -->
+    <div class="section">
+      <div class="section-title">2. 技術的制限事項（必ず案件冒頭で確認）</div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30%;">制限</th>
+            <th style="width:35%;">影響範囲</th>
+            <th>回避策／代替案</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="chip chip-ng">制約</span>LINE友だち追加URL（<code>line.me/R/</code>、<code>lin.ee/</code>）には<strong>任意パラメータを直接渡せない</strong></td>
+            <td>友だち追加URLを直接CTAに置きたい要望が来た時。<code>lt</code>パラメータのみLINE管理画面の経路レポート用</td>
+            <td>LIFF URL経由に切り替え（<strong>推奨</strong>）／または中間ページ経由で保存→転送</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-ng">制約</span>ポップアップツールがiframe描画の場合、親ページのJSから操作不可</td>
+            <td>クロスオリジンiframeで描画するツール（一部のチャットボット型）</td>
+            <td>ツール側のテンプレ変数機能を使う／別のポップアップツール提案／管理画面でURL直書き</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-warn">注意</span>MEのパラメータは<strong>後勝ち（Last-touch）</strong>仕様で上書きされる</td>
+            <td>「初回流入を保持したい」「アトリビューションを正確に取りたい」要望時</td>
+            <td>クライアントに後勝ち方式の前提を必ず説明・合意／初回保持が必須なら別カラムで対応検討</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-warn">注意</span>ブラウザストレージ依存（Cookie/localStorage）</td>
+            <td>Safari ITP・シークレットモード・cookie削除でパラメータ消失</td>
+            <td>保存期間を明示（30日推奨）／サーバーサイド方式も選択肢に提示</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-warn">注意</span>サイトのDOM構造変更で動かなくなる</td>
+            <td>A-2（DOM情報取得）を含む案件は将来的に脆い</td>
+            <td>セレクタを複数フォールバック化／クライアントにDOM変更時の事前連絡を依頼</td>
+          </tr>
+          <tr>
+            <td><span class="chip chip-warn">注意</span>パラメータ値の長さ・文字種制限</td>
+            <td>URLの全長は実質2000字程度まで／日本語タイトルは長くなりがち</td>
+            <td>不要な情報は載せない／値を切り詰めるロジックを入れる</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 3. 実装方式の決定フロー -->
+    <div class="section">
+      <div class="section-title">3. 実装方式の選択フロー</div>
+      <div class="flow">
+        <ol>
+          <li>
+            CTAに使う遷移URLは <strong>LIFF URL</strong> にできるか？
+            <span class="branch">
+              <span class="yes">Yes →</span> Q2へ ／
+              <span class="no">No →</span> <strong>C3：中間ページ経由</strong>（自社サーバーで保存→LINEに転送）を提案
+            </span>
+          </li>
+          <li>
+            流入元のCTAは <strong>ポップアップツール経由</strong> か？
+            <span class="branch">
+              <span class="yes">Yes →</span> Q3へ ／
+              <span class="no">No →</span> Q4へ
+            </span>
+          </li>
+          <li>
+            そのツールは <strong>親ページDOMにレンダリング</strong> されるか？（iframe描画でない）
+            <span class="branch">
+              <span class="yes">Yes →</span> <strong>GTM＋ツール内JS</strong>方式（TETORI等で実証済み）／
+              <span class="no">No →</span> ツール側テンプレ変数 or 別ツール提案
+            </span>
+          </li>
+          <li>
+            サイトの <strong>HTML改修権限</strong> がクライアント側にあるか？
+            <span class="branch">
+              <span class="yes">Yes →</span> サーバーサイド方式（PHP/Next.js等）— ワールドインテック型 ／
+              <span class="no">No →</span> <strong>GTM＋全ページ共通JS</strong>方式（クライアントサイドのみで完結）
+            </span>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- 4. 社内で必要な対応 -->
+    <div class="section">
+      <div class="section-title">4. 社内で必要な対応（ヒアリング〜納品）</div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title">① 要件ヒアリング</div>
+          <ul class="checklist">
+            <li>MEに格納したい項目の確定（URL／DOM／パス）</li>
+            <li>パラメータの命名規則（mc_memoのkey名）</li>
+            <li>後勝ち方式で合意できるか</li>
+            <li>計測の最終ゴール（広告計測 / CRM / 報酬還元）</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">② 技術調査</div>
+          <ul class="checklist">
+            <li>ポップアップツール種別と描画方式（DOM/iframe/shadow DOM）</li>
+            <li>サイトのHTML改修可否・GTM導入状況</li>
+            <li>取得対象DOMのセレクタ確定</li>
+            <li>既存LIFF URL構成の確認</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">③ 実装方式選定</div>
+          <ul class="checklist">
+            <li>サーバーサイド／クライアントサイドの選択</li>
+            <li>使用ツール（GTM / ポップアップツール内JS / サーバー言語）</li>
+            <li>見積もり工数の算定</li>
+            <li>運用負荷の説明（DOM変更時等）</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">④ 実装・テスト・納品</div>
+          <ul class="checklist">
+            <li>GTMタグ／ツール内JS／サーバーコードの実装</li>
+            <li>パラメータ付き／なし両パターンの動作確認</li>
+            <li>ME管理画面でのデータ格納確認</li>
+            <li>運用手順書（DOM変更時の対応含む）</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. クライアント側にお願いする対応 -->
+    <div class="section">
+      <div class="section-title">5. クライアント側にお願いする対応</div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:24%;">依頼項目</th>
+            <th style="width:18%;">対象方式</th>
+            <th style="width:18%;">必須／任意</th>
+            <th>備考</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>GTMコンテナの編集権限</strong></td>
+            <td><span class="chip chip-gtm">クライアントサイド</span></td>
+            <td><span class="chip chip-ok">必須</span></td>
+            <td>付与先メールアドレスを案件担当者に伝達</td>
+          </tr>
+          <tr>
+            <td><strong>ポップアップツール管理画面のアクセス</strong></td>
+            <td><span class="chip chip-tetori">B1 ツール経由</span></td>
+            <td><span class="chip chip-ok">必須</span></td>
+            <td>クリエイティブのJS/HTML編集権限が必要</td>
+          </tr>
+          <tr>
+            <td><strong>サイトHTML改修・FTP/Gitアクセス</strong></td>
+            <td><span class="chip chip-server">サーバーサイド</span></td>
+            <td><span class="chip chip-ok">必須</span></td>
+            <td>または改修担当者へのリクエスト窓口</td>
+          </tr>
+          <tr>
+            <td><strong>DOM構造の情報共有</strong></td>
+            <td>A2を含む全方式</td>
+            <td><span class="chip chip-ok">必須</span></td>
+            <td>取得対象要素のセレクタ・実テキスト例</td>
+          </tr>
+          <tr>
+            <td><strong>ステージング環境の提供</strong></td>
+            <td>全方式</td>
+            <td><span class="chip chip-warn">推奨</span></td>
+            <td>本番反映前のテストに使用</td>
+          </tr>
+          <tr>
+            <td><strong>本番反映の承認フロー合意</strong></td>
+            <td>全方式</td>
+            <td><span class="chip chip-ok">必須</span></td>
+            <td>誰がいつ公開するか・GTM公開権限の所在</td>
+          </tr>
+          <tr>
+            <td><strong>DOM/URL構造変更時の事前連絡</strong></td>
+            <td>A2・A3を含む案件</td>
+            <td><span class="chip chip-ok">必須</span></td>
+            <td>サイトリニューアル時に動作不能になるリスクの説明</td>
+          </tr>
+          <tr>
+            <td><strong>個人情報・規約上の確認</strong></td>
+            <td>全方式</td>
+            <td><span class="chip chip-warn">推奨</span></td>
+            <td>取得情報の利用範囲を社内法務に確認していただく</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 6. リスク・運用上の注意 -->
+    <div class="section">
+      <div class="section-title">6. 案件開始前に必ず合意しておくこと</div>
+      <div class="danger">
+        <strong>① 後勝ち方式の前提：</strong>
+        MEのパラメータは「最後の流入で上書き」される。アトリビューションの厳密性を求められる案件では、必ず冒頭で合意を取る。
+      </div>
+      <div class="danger">
+        <strong>② DOM変更リスク：</strong>
+        サイト改修やリニューアルでセレクタが変わると動作停止する。「変更時は事前連絡」を契約・SOWに明記する。
+      </div>
+      <div class="note">
+        <strong>見積もりへの反映：</strong>
+        実装工数に加え、<strong>初期ヒアリング・DOM調査工数</strong>と、<strong>運用フェーズでのDOM変更対応工数（リテイナー）</strong>も検討に含めること。
+      </div>
+    </div>
+
+    <!-- 7. 参考事例 -->
+    <div class="section">
+      <div class="section-title">7. 参考事例（社内ナレッジ）</div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:18%;">事例</th>
+            <th style="width:25%;">構成</th>
+            <th style="width:25%;">取得項目</th>
+            <th>備考</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>ワールドインテック</strong><br><span style="color:#6b7280;font-size:11px;">工場求人ワールド</span></td>
+            <td>サーバーサイド（PHP）<br>＋ Cookie</td>
+            <td>job_no / job_title / UTM一式</td>
+            <td>サイト改修対応のため柔軟性低／ポップアップ非対応 → GTM+TETORIで追加対応中</td>
+          </tr>
+          <tr>
+            <td><strong>タカミ</strong><br><span style="color:#6b7280;font-size:11px;">takami-labo.com</span></td>
+            <td>（検討中）GTM ＋ ポップアップ</td>
+            <td>argument / dmai / ec_media</td>
+            <td>アフィリエイト還元モデル／CVデータ込みのフィジビリ確認済み</td>
+          </tr>
+          <tr>
+            <td colspan="4" style="text-align:center;color:#9ca3af;font-style:italic;">新規案件はここに追記していく</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    株式会社mico ／ Mico Engage AI ／ 本資料は社内検討用ドラフト（v1.0）です ／ 更新時はバージョンを上げてください
+  </div>
+
+</div>
+</body>
+</html>
