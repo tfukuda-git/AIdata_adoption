@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ecforce × ME 連携 提案Tips（Mico社内・営業用）</title>
+<style>
+  :root{
+    --bg:#ffffff; --panel:#f7f9fc; --panel2:#eef2f8; --line:#d8dfeb;
+    --text:#1b2433; --muted:#5c6b85; --accent:#2563eb; --accent2:#7c5cff;
+    --in:#15a35a; --out:#d9622b; --warn:#b07a00; --bad:#dc2626; --ok:#15a35a;
+    --chip:#eef2f8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,sans-serif;
+    line-height:1.7;font-size:15px;}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 20px 80px;}
+  header.hero{border:1px solid var(--line);border-radius:16px;
+    background:linear-gradient(135deg,#f4f8ff,#eef2fb);padding:26px 28px;margin-bottom:10px;}
+  h1{font-size:23px;margin:0 0 6px;letter-spacing:.02em;}
+  .sub{color:var(--muted);font-size:14px;margin:0;}
+  .meta{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{background:var(--chip);border:1px solid var(--line);border-radius:999px;
+    padding:4px 12px;font-size:12.5px;color:var(--muted);}
+  .chip b{color:var(--text);font-weight:600;}
+  h2{font-size:19px;margin:38px 0 14px;padding-left:12px;border-left:4px solid var(--accent);}
+  h3{font-size:15.5px;margin:0 0 8px;}
+  p{margin:0 0 12px;}
+  .lead{color:var(--muted);font-size:14px;margin:-6px 0 18px;}
+
+  .principle{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .dir-card{border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--panel);}
+  .dir-card.in{border-top:4px solid var(--in);}
+  .dir-card.out{border-top:4px solid var(--out);}
+  .badge{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:6px;margin-bottom:8px;}
+  .badge.in{background:rgba(21,163,90,.14);color:var(--in);}
+  .badge.out{background:rgba(217,98,43,.14);color:var(--out);}
+  .flowline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 4px;font-size:13.5px;}
+  .node{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;white-space:nowrap;}
+  .node.me{border-color:var(--accent);color:#1e40af;background:#eef4ff;}
+  .arrow{color:var(--accent);font-weight:700;}
+  .arrow.in{color:var(--in)} .arrow.out{color:var(--out)}
+  .small{font-size:12.5px;color:var(--muted);margin-top:6px;}
+
+  table{width:100%;border-collapse:collapse;margin:6px 0 8px;font-size:13.3px;}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top;}
+  th{background:var(--panel2);color:#2a3650;font-weight:700;font-size:12.5px;}
+  td b{color:#0f1726;}
+  tr:nth-child(even) td{background:rgba(0,0,0,.025);}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;}
+  .tag.rt{background:rgba(37,99,235,.14);color:var(--accent);}
+  .tag.batch{background:rgba(124,92,255,.16);color:#6d4bd1;}
+  .tag.ng{background:rgba(220,38,38,.12);color:var(--bad);}
+  .tag.ok{background:rgba(21,163,90,.14);color:var(--ok);}
+
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  .card{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--panel);}
+  .card .kv{font-size:13px;color:var(--muted);margin:3px 0;}
+  .card .kv b{color:var(--text);font-weight:600;}
+  .card.reco{border:1px solid var(--ok);box-shadow:0 0 0 1px rgba(21,163,90,.18) inset;}
+  .card.ngc{border-color:rgba(220,38,38,.45);}
+
+  /* decision tree */
+  .tree{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:20px;}
+  .q{display:inline-block;background:#fff;border:2px solid var(--accent);border-radius:10px;
+    padding:10px 16px;font-weight:700;color:#1e40af;}
+  .branches{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px;}
+  .branch{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff;}
+  .branch.a{border-top:4px solid var(--accent);}
+  .branch.b{border-top:4px solid var(--accent2);}
+  .branch .yn{font-size:12px;font-weight:700;color:var(--muted);}
+  .branch h3{margin:4px 0 6px;}
+
+  .callout{border-radius:12px;padding:14px 16px;margin:10px 0;border:1px solid var(--line);}
+  .callout.warn{background:rgba(176,122,0,.07);border-color:rgba(176,122,0,.4);}
+  .callout.bad{background:rgba(220,38,38,.06);border-color:rgba(220,38,38,.4);}
+  .callout.ok{background:rgba(21,163,90,.07);border-color:rgba(21,163,90,.4);}
+  .callout h3{margin:0 0 6px;}
+  .callout .ic{font-weight:700;margin-right:6px;}
+
+  ul.clean{margin:6px 0 4px;padding-left:20px;}
+  ul.clean li{margin:5px 0;}
+  .tip{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  .tipcard{border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:10px;padding:13px 15px;background:var(--panel);}
+  .tipcard h3{font-size:14px;margin:0 0 5px;}
+  .tipcard p{font-size:13px;color:var(--muted);margin:0;}
+  .tipcard p b{color:var(--text);}
+  ol.check{margin:6px 0;padding-left:22px;}
+  ol.check li{margin:7px 0;}
+  .foot{margin-top:34px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:14px;}
+  .src{font-size:12px;color:var(--muted);}
+  @media(max-width:720px){.principle,.cards,.branches,.tip{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>ecforce × Mico Engage AI 連携 提案Tips</h1>
+    <p class="sub">Mico社内・技術営業用プレイブック / ecforceをお使いの企業に連携を提案するときの勘所</p>
+    <div class="meta">
+      <span class="chip">大原則：<b>MEは受け身（取込/送出を分ける）</b></span>
+      <span class="chip">選定軸：<b>リアルタイム要否でA/B</b></span>
+      <span class="chip">中間サーバ：<b>顧客準備（Micoは用意しない）</b></span>
+      <span class="chip">更新：<b>2026/06</b></span>
+    </div>
+  </header>
+
+  <!-- 0 -->
+  <h2>0. 大前提 — ME は「受け身」。まず“向き”を分ける</h2>
+  <p class="lead">MEは自分からデータを取りに行かない。MEのAPIを「誰かが呼ぶ」ことでデータが出入りする。最初に取込/送出のどちらの話かを整理すると誤解が消える。</p>
+  <div class="principle">
+    <div class="dir-card in">
+      <span class="badge in">① 取込（INTO ME）= 連携提案の主役</span>
+      <h3>ecforce などの顧客データ → ME のカスタム属性</h3>
+      <div class="flowline">
+        <span class="node">ecforce / 顧客DB</span><span class="arrow in">──▶</span><span class="node me">ME（API受信）</span>
+      </div>
+      <p class="small">配信のセグメント・出し分けに使う属性（購入有無、定期、ID連携状況等）を入れる方向。連携案件のほとんどはこちら。</p>
+    </div>
+    <div class="dir-card out">
+      <span class="badge out">② 送出（OUT OF ME）= 別の話</span>
+      <h3>ME の「Webhook機能」= 逆方向</h3>
+      <div class="flowline">
+        <span class="node me">ME（イベント発火）</span><span class="arrow out">──▶</span><span class="node">外部API / 顧客システム</span>
+      </div>
+      <p class="small"><b>頻出の誤解：</b>MEのWebhookは「MEから外部へデータを更新しに行く」機能。<b>ecforce→ME の取込には使えない</b>。</p>
+    </div>
+  </div>
+
+  <!-- 1 -->
+  <h2>1. 取込の手段は実質 A・B の2つ（Webhook直送は不可）</h2>
+  <p class="lead">「ecforce Webhookで発火→MEへ直送」は技術的にできない。提案では最初からA/Bの2択で考える。</p>
+  <table>
+    <thead><tr>
+      <th style="width:18%">手段</th><th style="width:12%">リアルタイム性</th>
+      <th style="width:18%">ecforce側で必要なもの</th><th>概要 / 使いどころ</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td><b>A. API連携</b></td>
+        <td><span class="tag rt">リアルタイム</span></td>
+        <td>外部サービスAPI連携オプション（初期0円/月3万）＋<b>連携企業様での開発</b></td>
+        <td>ecforce側プログラムが ecforce API でデータ取得 → ME API に書き込み。即時の出し分けが必要なときの本命。開発工数が発生。</td>
+      </tr>
+      <tr>
+        <td><b>B. CSV → SFTP → ETL</b></td>
+        <td><span class="tag batch">日次</span></td>
+        <td>CSV連携バッチ処理（個別実装・要見積）＋<b>SFTPサーバ（顧客準備）</b></td>
+        <td>ecforceが<b>毎日0:30</b>にCSVを自動出力 → 顧客のSFTPへ → MicoのETL(Reckoner)が取得 → ME。大量データに安全。実質日次。</td>
+      </tr>
+      <tr>
+        <td><b>×. ecforce Webhook 直送</b></td>
+        <td>—</td>
+        <td>—</td>
+        <td><span class="tag ng">不可</span> 送信先URL・ボディ(Liquid)は作れるが<b>認証ヘッダーを付けられず</b>、認証必須のME APIを直接呼べない。</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout bad">
+    <p style="margin:0"><span class="ic">⚠</span><b>Webhook直送は成立しない（一次情報で確認済み）。</b>ecforce Webhookの設定項目は「送信先URL・イベント・テンプレート（ボディ）」のみで認証ヘッダー欄が無い。よって取込は <b>A（リアルタイム）か B（日次）</b> の二択。<span class="src">出典：ecforce faq「Webhook機能」「Webhook テンプレート管理」。</span></p>
+  </div>
+
+  <!-- 2 -->
+  <h2>2. A / B の選び方 — 「リアルタイム要否」で決まる（最重要Tip）</h2>
+  <p class="lead">この一問でほぼ決まる。先にここを握ると話が速い。</p>
+  <div class="tree">
+    <div style="text-align:center"><span class="q">Q. 即時の出し分けが必要？<br>（購入直後にRM切替・シナリオ出し分け 等）</span></div>
+    <div class="branches">
+      <div class="branch a">
+        <div class="yn">▶ はい（リアルタイム必須）</div>
+        <h3>A. API連携</h3>
+        <ul class="clean" style="margin:0">
+          <li>ecforce側で<b>外部サービスAPI連携オプション（月3万）契約＋開発</b>が必要。</li>
+          <li>ecforce → ME API へ即時書き込み。</li>
+          <li>ecforce API は<b>1日1万件制限</b>に注意。</li>
+        </ul>
+      </div>
+      <div class="branch b">
+        <div class="yn">▶ いいえ（日次でOK）</div>
+        <h3>B. CSV → SFTP → ETL</h3>
+        <ul class="clean" style="margin:0">
+          <li>ecforceが毎日0:30にCSV出力 → <b>顧客SFTP</b> → ETL取得 → ME。</li>
+          <li>顧客は<b>CSV連携バッチ処理（個別実装）＋SFTPサーバ</b>をご用意。</li>
+          <li>大量データに安全。開発不要に近い。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="callout warn" style="margin-top:12px">
+    <p style="margin:0"><span class="ic">★</span><b>落とし穴Tip：</b>「ETLは最短10分間隔で取れます」と言っても、<b>ecforceのCSV出力が1日1回（深夜0:30）固定</b>なので、Bは<b>どう頑張っても実質日次</b>。＝「リアルタイム＝B」では実現できない。リアルタイムが要件なら必ずA。</p>
+  </div>
+
+  <!-- 3 -->
+  <h2>3. つまずきポイント / 提案Tips（よくある誤解）</h2>
+  <div class="tip">
+    <div class="tipcard"><h3>Webhookは“双方向”ではない</h3><p>MEのWebhookは<b>ME→外部</b>の送出専用。ecforce→MEの取込には使えない。方向を最初に整理する。</p></div>
+    <div class="tipcard"><h3>ecforce WebhookでME APIは叩けない</h3><p>認証ヘッダーを付けられない仕様。<b>「Webhookで連携」=取込には不可</b>。A/Bへ誘導。</p></div>
+    <div class="tipcard"><h3>中間サーバ(SFTP/S3)は顧客準備</h3><p>Micoはセキュリティ方針で<b>中間サーバを用意しない</b>。B案では顧客にSFTPをご準備いただく前提で案内。</p></div>
+    <div class="tipcard"><h3>LINE ID連携はecforce標準機能</h3><p><b>Social Plusは必須ではない</b>。ecforceビルトインでUID取得可。まず標準機能から検討。</p></div>
+    <div class="tipcard"><h3>ecforce API は1日1万件制限</h3><p>超過でHTTP 429・翌朝までロック。<b>大量データはBが安全</b>。A案でも件数設計に注意。</p></div>
+    <div class="tipcard"><h3>モールデータはUID紐付け困難</h3><p>自社ECデータに限定するのが現実的。段階導入（自社EC→モール）を推奨。</p></div>
+  </div>
+
+  <!-- 4 -->
+  <h2>4. 連携キー & データ設計 Tips</h2>
+  <p class="lead">「何をキーに、何を入れるか」。最小設計で十分動くことが多い。</p>
+  <div class="cards">
+    <div class="card">
+      <h3>連携キー＝LINE UID</h3>
+      <ul class="clean" style="margin:0">
+        <li>ecforceのLINEログイン（ID連携）でUIDを取得し、MEと突合。</li>
+        <li>電話番号は変更・重複リスク、会員番号は突合ロジック要。<b>UID推奨</b>。</li>
+        <li><b>顧客番号が連携されていれば「ID連携済み」</b>と判定でき、Day0から出し分け可能。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>推奨データ項目（最小）</h3>
+      <ul class="clean" style="margin:0">
+        <li><b>顧客ID（LINE UID）</b> … 突合キー</li>
+        <li><b>購入商品</b> … 商品別の出し分け</li>
+        <li><b>定期ステータス（1回 / 3回定期 等）</b> … アップセル判定</li>
+        <li><b>ID連携状況</b> … 連携済/未でのシナリオ分岐</li>
+      </ul>
+      <p class="small">アンケートでの属性収集は不要なケースが多い（ecforce側データで代替）。</p>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <h2>5. Web タグ / GTM 連携 Tips</h2>
+  <p class="lead">属性連携と合わせて提案すると行動データが取れ、施策の幅が広がる。初耳の顧客も多いので早めに共有。</p>
+  <div class="cards">
+    <div class="card">
+      <h3>タグは2種類</h3>
+      <ul class="clean" style="margin:0">
+        <li><b>全ページ共通タグ（土台）</b> … LINEから遷移したユーザーの行動をMEが取得できる仕組み。</li>
+        <li><b>イベント別タグ</b> … LP閲覧 / 商品詳細 / カート追加 / 購入 / お気に入り追加 など。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>提案時の注意</h3>
+      <ul class="clean" style="margin:0">
+        <li><b>カゴ落ち配信には「カート追加タグ」＋「サンクスページタグ」の両方</b>が必要。</li>
+        <li>PV数の上限（例：200万PV）を確認。多くの場合は余裕。</li>
+        <li>全ページに貼るかは顧客社内確認が要るので、<b>サンプルと管理シートを早めに送付</b>。</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <h2>6. コスト・契約の整理（A / B 別）</h2>
+  <table>
+    <thead><tr><th style="width:22%">項目</th><th style="width:14%">主体</th><th style="width:18%">費用</th><th>メモ</th></tr></thead>
+    <tbody>
+      <tr><td><b>外部サービスAPI連携オプション</b><br><span class="src">A案で必要</span></td><td>顧客（ecforce）</td><td>初期0円 / 月3万</td><td>API直叩きのために必須。加えて連携企業様側での開発工数。</td></tr>
+      <tr><td><b>CSV連携バッチ処理（個別実装）</b><br><span class="src">B案で必要</span></td><td>顧客（ecforce）</td><td>要見積（約15営業日）</td><td>毎日0:30にCSV自動出力→顧客SFTPへアップ（公開鍵認証）。SFTP送信込み＝別途FTPオプションは原則不要。</td></tr>
+      <tr><td><b>SFTPサーバ（中間サーバ）</b><br><span class="src">B案で必要</span></td><td>顧客</td><td>顧客ご負担</td><td>Micoは中間サーバ(SFTP/S3)を準備しない方針。顧客側でご用意。</td></tr>
+      <tr><td><b>Mico（ME）側</b></td><td>Mico</td><td>契約プラン内で対応可</td><td>API連携・Webタグを含むプランなら追加料金が発生しないケースが多い。標準のデータ連携処理オプションは10万。個別に要確認。</td></tr>
+      <tr><td><b>LINE ID連携</b></td><td>顧客</td><td>標準機能</td><td>追加費用なし。Social Plus不要。</td></tr>
+    </tbody>
+  </table>
+  <p class="src">※ Webhookオプションは取込では不要（直送できないため）。</p>
+
+  <!-- 7 -->
+  <h2>7. 提案の進め方チェックリスト</h2>
+  <div class="tree">
+    <ol class="check">
+      <li><b>実現したいこと・ユースケースをすり合わせ</b>（Day0配信、購入後の出し分け 等）。</li>
+      <li><b>連携キーと項目を確定</b>（UID＋購入商品＋定期ステータス＋ID連携状況 が基本）。</li>
+      <li><b>リアルタイム要否を必ず確認</b> → A / B を決める（ここが分岐の肝）。</li>
+      <li>A案なら<b>ecforceを交えた3社MTG</b>でAPI仕様・オプション・開発を確認。</li>
+      <li>B案なら<b>顧客のSFTP準備</b>とCSV連携バッチ処理（個別実装）を見積もり。</li>
+      <li>Webタグ/GTMのサンプル・管理シートを共有し、貼付範囲を社内確認してもらう。</li>
+      <li>テスト → リリースへ（リリースと並走で進行）。</li>
+    </ol>
+  </div>
+
+  <!-- 8 -->
+  <h2>8. 適用例：ジェイフロンティア様</h2>
+  <p class="lead">上記Tipsを今回案件に当てはめた状態（2026/06時点）。</p>
+  <div class="cards">
+    <div class="card reco">
+      <h3>結論：リアルタイム必須 → A案（API連携）</h3>
+      <ul class="clean" style="margin:0">
+        <li>外池氏が<b>リアルタイム連携を明言</b>：購入後すぐにリッチメニュー切替、購入直後に商品別シナリオを出したい。</li>
+        <li>B（日次）では要件を満たせない（CSV出力が0:30固定＝実質日次）。</li>
+        <li>A案実現には<b>ecforce側でAPI連携オプション契約＋開発</b>が必要 → <b>ecforceを交えた3社MTG</b>で方式確定へ。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>前提・データ設計</h3>
+      <ul class="clean" style="margin:0">
+        <li>ゴール：LINEログインでUID取得 → ID連携有無でDay0から配信最適化。</li>
+        <li>連携項目（4つ）：顧客ID・購入商品・定期ステータス(1回/3回)・ID連携状況。外池氏が認識相違なしと確認。</li>
+        <li>Mico側は現契約プラン内で対応＝追加料金なし。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout ok" style="margin-top:10px">
+    <h3><span class="ic">✓</span>ネクストアクション</h3>
+    <ul class="clean" style="margin:0">
+      <li>Webタグのサンプル（共通＋個別）を外池氏へ送付（福田）。</li>
+      <li>Webタグ管理シートのURLを共有（矢澤）。</li>
+      <li>リアルタイム可否・方式確定のため <b>ecforce含む3社MTGを調整</b>（矢澤）。候補日はChatWorksで連絡。</li>
+      <li>リリース目標：<b>7月中旬</b>。</li>
+    </ul>
+  </div>
+
+  <div class="foot">
+    出典：社内説明資料「EC Force × Mico Engage AI」/ Slack #相談スレッド・定例・3社調整（2026年）/ ecforce faq「Webhook機能」「Webhook テンプレート管理」「外部ツールへのCSV連携バッチ処理機能」。中間サーバは顧客準備（Micoセキュリティ方針）。費用・オプション要否は案件ごとに個別見積もり。本資料はMico社内・技術営業用Tips。
+  </div>
+
+</div>
+</body>
+</html>
