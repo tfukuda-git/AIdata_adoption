@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ME Webhook / Webhookリレー / データ連携 の違い（Mico社内・営業用）</title>
+<style>
+  :root{
+    --bg:#ffffff; --panel:#f7f9fc; --panel2:#eef2f8; --line:#d8dfeb;
+    --text:#1b2433; --muted:#5c6b85; --accent:#2563eb; --accent2:#7c5cff;
+    --in:#15a35a; --out:#d9622b; --warn:#b07a00; --bad:#dc2626; --ok:#15a35a;
+    --chip:#eef2f8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,sans-serif;
+    line-height:1.7;font-size:15px;}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 20px 80px;}
+  header.hero{border:1px solid var(--line);border-radius:16px;
+    background:linear-gradient(135deg,#f4f8ff,#eef2fb);padding:26px 28px;margin-bottom:10px;}
+  h1{font-size:22px;margin:0 0 6px;letter-spacing:.02em;}
+  .sub{color:var(--muted);font-size:14px;margin:0;}
+  .meta{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{background:var(--chip);border:1px solid var(--line);border-radius:999px;
+    padding:4px 12px;font-size:12.5px;color:var(--muted);}
+  .chip b{color:var(--text);font-weight:600;}
+  h2{font-size:19px;margin:38px 0 14px;padding-left:12px;border-left:4px solid var(--accent);}
+  h3{font-size:15.5px;margin:0 0 8px;}
+  p{margin:0 0 12px;}
+  .lead{color:var(--muted);font-size:14px;margin:-6px 0 18px;}
+
+  .cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  .card{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--panel);}
+  .card .kv{font-size:13px;color:var(--muted);margin:3px 0;}
+  .card .kv b{color:var(--text);font-weight:600;}
+  .card.c1{border-top:4px solid var(--out);}
+  .card.c2{border-top:4px solid var(--accent2);}
+  .card.c3{border-top:4px solid var(--in);}
+  .card.reco{border:1px solid var(--ok);box-shadow:0 0 0 1px rgba(21,163,90,.18) inset;}
+  .tagh{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:6px;margin-bottom:7px;}
+  .tagh.c1{background:rgba(217,98,43,.14);color:var(--out);}
+  .tagh.c2{background:rgba(124,92,255,.16);color:#6d4bd1;}
+  .tagh.c3{background:rgba(21,163,90,.14);color:var(--in);}
+
+  .flowline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0;font-size:13px;}
+  .node{background:#fff;border:1px solid var(--line);border-radius:8px;padding:5px 9px;white-space:nowrap;}
+  .node.me{border-color:var(--accent);color:#1e40af;background:#eef4ff;}
+  .node.line{border-color:#06c755;color:#067a37;background:#eafaf0;}
+  .arrow{font-weight:700;color:var(--muted);}
+
+  table{width:100%;border-collapse:collapse;margin:6px 0 8px;font-size:13px;}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top;}
+  th{background:var(--panel2);color:#2a3650;font-weight:700;font-size:12.5px;}
+  td b{color:#0f1726;}
+  .col1{color:var(--out);font-weight:700;}
+  .col2{color:#6d4bd1;font-weight:700;}
+  .col3{color:var(--in);font-weight:700;}
+
+  .callout{border-radius:12px;padding:14px 16px;margin:10px 0;border:1px solid var(--line);}
+  .callout.warn{background:rgba(176,122,0,.07);border-color:rgba(176,122,0,.4);}
+  .callout.bad{background:rgba(220,38,38,.06);border-color:rgba(220,38,38,.4);}
+  .callout.ok{background:rgba(21,163,90,.07);border-color:rgba(21,163,90,.4);}
+  .callout .ic{font-weight:700;margin-right:6px;}
+  ul.clean{margin:6px 0 4px;padding-left:20px;}
+  ul.clean li{margin:5px 0;}
+  .foot{margin-top:34px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:14px;}
+  .src{font-size:12px;color:var(--muted);}
+  @media(max-width:760px){.cards3,.cards{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>ME Webhook機能 / Webhookリレー / データ連携 の違い</h1>
+    <p class="sub">Mico社内・営業用 / 混同しやすい3つを切り分ける ＋ Refa（MTG様）適用例</p>
+    <div class="meta">
+      <span class="chip">核：<b>3つは「全くの別物」</b></span>
+      <span class="chip">Refa：<b>Mii＋ME＋SFMC の共存構成</b></span>
+      <span class="chip">リリース想定：<b>2026/08/01</b></span>
+      <span class="chip">更新：<b>2026/06</b></span>
+    </div>
+  </header>
+
+  <!-- 0 -->
+  <h2>0. まず結論：この3つは別物（混同しない）</h2>
+  <p class="lead">「Mico Webhookでデータ連携」という言い方が混乱の元。<b>Webhookリレー</b>と<b>データ連携</b>は仕組みも運ぶ中身も違う。<b>ME Webhook機能</b>はさらに別。</p>
+  <div class="cards3">
+    <div class="card c1">
+      <span class="tagh c1">① ME Webhook機能</span>
+      <h3>ME → 外部へ「実行」</h3>
+      <div class="flowline"><span class="node me">ME(発火)</span><span class="arrow">▶</span><span class="node">外部API/顧客システム</span></div>
+      <p class="kv">MEの内部イベントを起点に、外部APIを叩いて顧客システム側を更新・実行する<b>送出方向</b>の機能。LINEイベントの中継でも、ME保有データの一括連携でもない。</p>
+      <div class="kv" style="margin-top:8px;padding:8px 10px;background:#fff;border:1px dashed var(--out);border-radius:8px">
+        <b>例：Porters連携</b><br>
+        LINEフォーム回答時に、<b>ME側で属性を更新</b>しつつ<b>同時にPortersへWebhookを発火</b>し、Porters上に<b>新規レコードを作成</b>。
+        <div class="flowline" style="margin:6px 0 0;font-size:11.5px"><span class="node line">LINEフォーム回答</span><span class="arrow">▶</span><span class="node me">ME属性更新</span><span class="arrow">＋</span><span class="node">Porters Webhook→新規レコード</span></div>
+      </div>
+    </div>
+    <div class="card c2">
+      <span class="tagh c2">② Webhookリレー</span>
+      <h3>LINEイベントを「素通しで分配」</h3>
+      <div class="flowline"><span class="node line">LINE</span><span class="arrow">▶</span><span class="node me">リレー(ME側)</span><span class="arrow">▶</span><span class="node">ME / SFMC</span></div>
+      <p class="kv">LINEから来るWebhook通知を<b>ヘッダー含め一切加工せず</b>そのまま複数の外部URL（ME・SFMC）へ転送。<b>MEやMiiで取得した独自データは含まない</b>。</p>
+    </div>
+    <div class="card c3">
+      <span class="tagh c3">③ データ連携（API / ETL）</span>
+      <h3>外部 ⇄ ME でデータを「やり取り」</h3>
+      <div class="flowline"><span class="node">SF / 外部DB</span><span class="arrow">⇄</span><span class="node me">ME / Mii</span></div>
+      <p class="kv">CSV/ETL/APIで連携。<b>外部→ME（取込）がむしろ主流</b>：例 SFのステータス（ID連携有無・既存/未顧客）をMEに入れて出し分け。ME→外部を含む<b>双方向はETL(Reckoner)</b>が対応。キーは<b>UIDのほか Mico ID・顧客ID・電話番号・メールアドレス</b>等。</p>
+      <div class="kv" style="margin-top:8px;padding:8px 10px;background:#fff;border:1px dashed var(--in);border-radius:8px">
+        <b>例：SFステータスの取込</b><br>
+        SFが持つ「ID連携有無」「既存/未顧客」等をMEのカスタム属性へ連携 → MEで<b>セグメント配信・リッチメニュー出し分け</b>に活用。
+      </div>
+    </div>
+  </div>
+
+  <!-- 1 -->
+  <h2>1. 3概念の比較表</h2>
+  <table>
+    <thead><tr>
+      <th style="width:16%">観点</th>
+      <th style="width:28%"><span class="col1">① ME Webhook機能</span></th>
+      <th style="width:28%"><span class="col2">② Webhookリレー</span></th>
+      <th style="width:28%"><span class="col3">③ データ連携(API/ETL)</span></th>
+    </tr></thead>
+    <tbody>
+      <tr><td><b>何をする</b></td>
+        <td>MEのイベント発火で外部APIを実行</td>
+        <td>LINEのWebhookを複数システムへ転送（分配）</td>
+        <td>外部とMEの間でデータをやり取り（取込／書き出し）</td></tr>
+      <tr><td><b>方向</b></td>
+        <td>ME → 外部</td>
+        <td>LINE → ME＋SFMC（双方）</td>
+        <td>外部 ⇄ ME/Mii（<b>取込が主流</b>）</td></tr>
+      <tr><td><b>運ぶ中身</b></td>
+        <td>MEイベントに紐づく外部API実行</td>
+        <td><b>LINE標準イベントのみ</b>（友だち追加/ブロック/メッセージ受信/postback/配信完了ログ等）。加工なし</td>
+        <td><b>属性・ステータス・各種ログ等の実データ</b>（外部のステータス取込／MEデータ書き出し）</td></tr>
+      <tr><td><b>MEの独自データ<br>(属性/アンケート等)</b></td>
+        <td><b style="color:var(--ok)">含められる</b><br><span class="src">例:フォーム回答(カスタム属性)→Portersで1レコード作成</span></td>
+        <td><b style="color:var(--bad)">含まれない</b></td>
+        <td><b style="color:var(--ok)">含められる</b></td></tr>
+      <tr><td><b>いつ必要</b></td>
+        <td>ME起点で外部を動かしたいとき</td>
+        <td>1つのLINE OAのイベントをMEとSFMC両方で受けたいとき</td>
+        <td>外部データをMEで使う（主流）／MEデータを外部で使うとき</td></tr>
+      <tr><td><b>注意</b></td>
+        <td>仕様詳細は要確認</td>
+        <td><span class="col1">障害時の責任分界点リスク。積極推奨せず。免責合意が必須</span></td>
+        <td>別途構築が必要。キーはUIDに限らない（Mico ID・顧客ID・電話番号・メールアドレス等）</td></tr>
+    </tbody>
+  </table>
+  <div class="callout bad">
+    <p style="margin:0 0 6px"><span class="ic">⚠</span><b>最頻出の誤解：</b>「Webhookリレーを通せばMEのアンケート結果などもSFMCに渡る」は<b>誤り</b>。リレーはLINEイベントの素通し転送のみで、MEの属性データは含まない（類似のファーマフーズ様案件で確認済み）。</p>
+    <p style="margin:0"><b>MEのデータを外部（SFMC等）で使うには別途連携が必要。</b>手段は2つ：<b>③データ連携(API/ETL)</b>でデータを渡す／<b>①ME Webhook機能で外部APIを叩く</b>（フォーム回答等のカスタム属性を載せられる）。ただし<b>①でやりたいことが実現できるかは相手側＝SFMCのAPI仕様による</b>。</p>
+  </div>
+
+  <!-- 2 -->
+  <h2>2. Webhookリレーの中身（②）</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>仕組み</h3>
+      <ul class="clean" style="margin:0">
+        <li>ME側に<b>リレーサーバ</b>を用意。1つのLINE公式アカウントのWebhookをここで受ける。</li>
+        <li>各OAのチャネル情報でリクエストを判定し、<b>MEとSFMCの双方へ振り分け転送</b>。</li>
+        <li>転送は<b>ヘッダー含め無加工の素通し</b>。テーブル形式の引き渡しではない。</li>
+      </ul>
+    </div>
+    <div class="card ngc" style="border-color:rgba(220,38,38,.45)">
+      <h3>運用上の注意（社内方針）</h3>
+      <ul class="clean" style="margin:0">
+        <li>リレーサーバ障害（ダウン・遅延）時にイベントが届かない等、<b>責任分界点が難しい</b>。</li>
+        <li>社内方針として<b>積極的に推奨・提案するソリューションではない</b>。</li>
+        <li>提案・実施時は<b>障害リスク／責任分界点を顧客に説明し、免責合意が必須</b>。</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <h2>3. データ連携(API/ETL)の中身（③）— 双方向</h2>
+  <p class="lead">実務では<b>外部→ME（取込）が主流</b>。<b>双方向更新はETL(Reckoner)が対応</b>（API/CSVは基本「MEの更新＝取込」方向）。名寄せキーは<b>UID以外にも複数</b>あり、取得方法も5種類。</p>
+  <div class="cards">
+    <div class="card c3">
+      <h3>外部 → ME（取込）★主流</h3>
+      <ul class="clean" style="margin:0">
+        <li>SFなど外部DBの<b>ステータスをMEのカスタム属性へ取込</b>。</li>
+        <li>例：<b>ID連携の有無 / 既存・未顧客 / 購買ステータス</b> 等。</li>
+        <li>→ MEでの<b>セグメント配信・リッチメニュー出し分け</b>に活用。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>ME → 外部（書き出し）</h3>
+      <p class="kv" style="margin:0 0 6px">MEの実データをSF/SFMC等へ。DWH連携時、キー（UID等）で以下が渡せる：</p>
+      <ul class="clean" style="margin:0">
+        <li>カスタマー情報（基本属性・カスタム属性）</li>
+        <li>LINE配信ログ、クリックログ、開封ログ</li>
+        <li>postback受信ログ</li>
+        <li>LINE友だち登録ログ、LINEブロックログ</li>
+        <li>アンケート配信ログ、回答開始ログ、回答完了ログ</li>
+      </ul>
+      <p class="small src">出典：『勉強会用：データ連携』Slide 19</p>
+    </div>
+    <div class="card">
+      <h3>連携手段（3種）</h3>
+      <ul class="clean" style="margin:0">
+        <li><b>CSV連携</b>：手動・追加費用なし。MEの更新（取込）のみ。即時性は弱い。</li>
+        <li><b>ETL（Reckoner）</b>：ノーコード自動・<b>双方向更新可</b>・5分〜日次。月10万／構築約3ヶ月。</li>
+        <li><b>API連携</b>：リアルタイム・MEの更新（取込）のみ。クライアント側開発が必要（レート制限：1秒10回／1実行100件）。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>名寄せキーと取得方法</h3>
+      <p class="kv" style="margin:0 0 4px">キー候補：<b>UID / Mico ID / 顧客ID / 電話番号 / メールアドレス</b></p>
+      <p class="kv" style="margin:0">取得方法5種：① QR(パラメータ付URL) ② LINEログイン ③ Webタグ(GTM)で顧客番号取得 ④ アンケート回収 ⑤ オペレーター手入力。<span class="src">※電話/Email突合は誤連携リスクに注意</span></p>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <h2>4. LINE Webhook の「向き先」3パターン</h2>
+  <p class="lead">1つのLINE OAのWebhookをどこに向けるかで、できること／できないことが変わる。</p>
+  <table>
+    <thead><tr><th style="width:24%">向き先</th><th>結果</th></tr></thead>
+    <tbody>
+      <tr><td><b>Micoのみ</b></td><td>SFMC側でLINEのリアルタイムイベント（友だち追加・メッセージ受信等）が<b>受け取れない</b>。</td></tr>
+      <tr><td><b>SFMCのみ</b></td><td>ME側でイベントを受け取れず、<b>MEの基本機能（RM出し分け・シナリオ配信・アンケート回収）が正常動作しない</b>。</td></tr>
+      <tr><td><b>Webhookリレーで双方</b></td><td>両システムでLINEイベントを受け取れる。ただし<b>ME/Miiで取得・加工したデータをSFで使うには別途データ連携が必須</b>。</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 5 -->
+  <h2>5. 適用例：Refa（MTG様）</h2>
+  <p class="lead">SFMCでメッセージ配信を想定。Mii・ME・SFMCを共存させたい構成（2026/06時点・新規検討、200万件想定）。</p>
+  <div class="callout" style="background:var(--panel)">
+    <h3 style="margin:0 0 8px;color:#1e40af">想定ユースケース（先方提示）</h3>
+    <div class="flowline" style="gap:6px">
+      <span class="node line">LINE</span><span class="arrow">▶</span>
+      <span class="node">Mii（顧客管理・店舗QR別配信）</span><span class="arrow">▶ API</span>
+      <span class="node me">ME（シナリオ配信）</span><span class="arrow">▶ データ連携</span>
+      <span class="node">SF / SFMC（LINE/メルマガ/AppPush配信）</span>
+    </div>
+    <ul class="clean" style="margin:8px 0 0">
+      <li>Mii：LINE接点を集約、店舗からQRごとに担当者を分けて<b>配信のみ</b>（1on1なし）。</li>
+      <li>Mii → ME：顧客データを反映（タップ等を見てシナリオ配信）。<b>方式は要確認</b>（CSV/ETL/APIのいずれか。津村氏メモでは「API連携」と記載だが未確定）。</li>
+      <li>ME → SF：データを戻したい（先方は「Mico Webhookで？」と認識）。手段は<b>①ME Webhook(外部API実行)</b>か<b>③データ連携(API/ETL)</b>。MEデータをSFで使う整理が必要。</li>
+      <li>SFMC：LINE/メルマガ/AppPushを配信。<b>「LINE Webhook活用」＝SFMCがLINEのWebhookイベントを受け取りたい</b>意（要確認）→ だから“LINE Webhookの向き先”＝Webhookリレーが論点になる。</li>
+    </ul>
+  </div>
+
+  <h3 style="margin:20px 0 8px">3つの質問への回答</h3>
+  <div class="cards">
+    <div class="card">
+      <h3>Q1. SFMCへ渡せるデータは？</h3>
+      <p class="kv" style="margin:0">手段で別物。<b>リレー</b>＝LINE標準イベントのみ（ME独自データなし）。<b>データ連携(API/ETL)</b>＝第3章のテーブル（カスタマー属性・各種ログ・アンケートログ等、UID等のキー）。</p>
+    </div>
+    <div class="card">
+      <h3>Q2. 並列で実現可能？</h3>
+      <p class="kv" style="margin:0">技術的に<b>可能</b>。Mii→ME（API）、ME⇔SFMCのLINEイベント共存（リレー）、ME→SF（API/ETL）を<b>それぞれ別建てで</b>構築すれば並走できる。</p>
+    </div>
+    <div class="card ngc" style="border-color:rgba(176,122,0,.5)">
+      <h3>Q3. Webhook(リレー)を提案して良い？</h3>
+      <p class="kv" style="margin:0">提案<b>自体は可能</b>だが<b>積極推奨ではない</b>。必要な場合は<b>障害リスク・責任分界点を説明し免責合意</b>が前提。</p>
+    </div>
+    <div class="card reco">
+      <h3>総括</h3>
+      <p class="kv" style="margin:0">本要件は <b>①Webhookリレー構築</b>（LINEイベントを双方へ）＋ <b>②API/ETLデータ連携構築</b>（MEの実データをSFへ）の<b>2系統を別々に</b>設計する必要があり、構成が複雑。お客様・ベンダー含めた<b>慎重な要件定義</b>を推奨。</p>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <h2>6. 注意・出典</h2>
+  <div class="callout warn">
+    <ul class="clean" style="margin:0">
+      <li><b>情報の鮮度：</b>根拠となるSlackログ（#ask_product1 / #ask_dev_sd1 等）は主に<b>2024〜2025年初頭</b>のもの。現在（2026/06）から1年以上経過しており、<b>最新の連携仕様・Webhookリレー提供要件に変更がないか要確認</b>。</li>
+      <li><b>Mico内部仕様：</b>本資料は提供されたSD/プロダクト回答・提案資料の記載範囲で整理。記載のない詳細（ME Webhook機能の仕様等）は<b>断定せず要確認</b>。</li>
+    </ul>
+  </div>
+  <div class="foot">
+    出典：Slack #ask_product1 / #ask_dev_sd1 のSD回答、『勉強会用：データ連携』Slide 19、株式会社Micoご提案資料（2026.6）、Refa/MTG様 問い合わせ・商談メモ。本資料はMico社内・営業用の整理ドラフト。
+  </div>
+
+</div>
+</body>
+</html>
