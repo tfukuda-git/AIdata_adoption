@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mico × sGTM/CAPI 対応 構成整理（MTG用）</title>
+<style>
+  :root{
+    --bg:#ffffff; --panel:#f7f9fc; --panel2:#eef2f8; --line:#d8dfeb;
+    --text:#1b2433; --muted:#5c6b85; --accent:#2563eb; --accent2:#7c5cff;
+    --in:#15a35a; --out:#d9622b; --warn:#b07a00; --bad:#dc2626; --ok:#15a35a;
+    --chip:#eef2f8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,sans-serif;
+    line-height:1.7;font-size:15px;}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 20px 80px;}
+  header.hero{border:1px solid var(--line);border-radius:16px;
+    background:linear-gradient(135deg,#f4f8ff,#eef2fb);padding:26px 28px;margin-bottom:10px;}
+  h1{font-size:22px;margin:0 0 6px;letter-spacing:.02em;}
+  .sub{color:var(--muted);font-size:14px;margin:0;}
+  .meta{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{background:var(--chip);border:1px solid var(--line);border-radius:999px;
+    padding:4px 12px;font-size:12.5px;color:var(--muted);}
+  .chip b{color:var(--text);font-weight:600;}
+  h2{font-size:19px;margin:36px 0 14px;padding-left:12px;border-left:4px solid var(--accent);}
+  h3{font-size:15.5px;margin:0 0 8px;}
+  p{margin:0 0 12px;}
+  .lead{color:var(--muted);font-size:14px;margin:-6px 0 18px;}
+
+  .steps{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;margin:8px 0;}
+  .step{flex:1 1 200px;min-width:200px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;}
+  .step.s1{border-top:4px solid var(--out);}
+  .step.s2{border-top:4px solid var(--accent);}
+  .step.s3{border-top:4px solid var(--accent2);}
+  .step .n{font-size:11px;font-weight:700;color:var(--muted);}
+  .step .t{font-size:14.5px;font-weight:700;margin:2px 0 4px;}
+  .step .o{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;margin-top:6px;}
+  .o.mico{background:rgba(37,99,235,.14);color:var(--accent);}
+  .o.ksk{background:rgba(217,98,43,.14);color:var(--out);}
+  .seq{align-self:center;color:var(--muted);font-size:18px;font-weight:700;}
+
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  .card{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--panel);}
+  .card.reco{border:1px solid var(--ok);box-shadow:0 0 0 1px rgba(21,163,90,.18) inset;}
+  .card .kv{font-size:13px;color:var(--muted);margin:3px 0;}
+  .card .kv b{color:var(--text);}
+  ul.clean{margin:6px 0 4px;padding-left:20px;}
+  ul.clean li{margin:5px 0;}
+  code{background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:12.5px;}
+  .callout{border-radius:12px;padding:14px 16px;margin:10px 0;border:1px solid var(--line);}
+  .callout.warn{background:rgba(176,122,0,.07);border-color:rgba(176,122,0,.4);}
+  .callout.bad{background:rgba(220,38,38,.06);border-color:rgba(220,38,38,.4);}
+  .callout.ok{background:rgba(21,163,90,.07);border-color:rgba(21,163,90,.4);}
+  .callout .ic{font-weight:700;margin-right:6px;}
+  .badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;}
+  .badge.ok{background:rgba(21,163,90,.14);color:var(--ok);}
+  .badge.q{background:rgba(176,122,0,.16);color:var(--warn);}
+  .foot{margin-top:34px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:14px;}
+  .src{font-size:12px;color:var(--muted);}
+  @media(max-width:760px){.cards{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>Mico × sGTM / CAPI 対応 構成整理</h1>
+    <p class="sub">Mico社内・MTG用 / Shopifyクライアント（野口様）向け sGTMサーバーサイド送信の構成と確認軸</p>
+    <div class="meta">
+      <span class="chip">結論：<b>技術的に可能（要件すり合わせ前提）</b></span>
+      <span class="chip">送信：<b>案B＝参照APIポーリングで堅く実現</b></span>
+      <span class="chip">CV所在：<b>社内で握る</b></span>
+      <span class="chip">MTG：<b>必須</b></span>
+    </div>
+  </header>
+
+  <!-- 0 -->
+  <h2>0. 一言サマリ</h2>
+  <p class="lead">壁はあるが対応可能。鍵は3つ＋戦略ゲート1つ。</p>
+  <div class="callout ok">
+    <ul class="clean" style="margin:0">
+      <li><b>① 流入時に gclid/fbclid を捕捉</b>してMEのカスタム属性に保持（GTM か LP改修かは要確認）。</li>
+      <li><b>② ME→sGTM送信は「カスタマー参照APIポーリング（案B）」で堅く実現</b>。怪しい“配信＋Webhook（未検証）”に依存しなくてよい。</li>
+      <li><b>③ sGTM→各媒体CAPI は先方</b>。dedup（<code>event_id</code>）必須。</li>
+      <li><b>戦略ゲート：CVの真実の所在</b>を社内で握る（MEを経路に入れる根拠＝sGTMだけでは足りない理由）。</li>
+    </ul>
+  </div>
+
+  <!-- 1 -->
+  <h2>1. 全体構成（3ステップ・所有分界）</h2>
+  <div class="steps">
+    <div class="step s1">
+      <div class="n">STEP ①</div>
+      <div class="t">識別子・CVをMEに揃える</div>
+      <div class="kv">流入時に <b>gclid / fbclid</b> を取得し uid に紐づけ、MEの<b>カスタム属性</b>として保持。WebタグでCVも取込。</div>
+      <span class="o ksk">Mico＋先方（捕捉手段次第）</span>
+    </div>
+    <div class="seq">▶</div>
+    <div class="step s2">
+      <div class="n">STEP ②</div>
+      <div class="t">ME → sGTM へ送信</div>
+      <div class="kv"><b>Prismaticが GET /v1/customer をポーリング</b>（更新日時で差分取得）→ sGTMのエンドポイントへPOST。</div>
+      <span class="o mico">Mico</span>
+    </div>
+    <div class="seq">▶</div>
+    <div class="step s3">
+      <div class="n">STEP ③</div>
+      <div class="t">sGTM → 各媒体CAPI</div>
+      <div class="kv">sGTMのサーバータグから <b>Google / Meta / Yahoo</b> のCAPIへ送信。dedup・パラメータ最適化。</div>
+      <span class="o ksk">先方</span>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <h2>2. ① 流入時の gclid/fbclid 捕捉（GTM か LP改修か）</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>設計の要点</h3>
+      <ul class="clean" style="margin:0">
+        <li><b>CV時にブラウザから読むのではなく、流入時に捕まえてuidに紐づけ、ME属性で保持</b>。ITPで gclid Cookieは数日で消えるため、ブラウザ非依存にするのが必須。</li>
+        <li>媒体別の鍵を正しく：<b>Google=gclid / Meta=fbclid</b>（GA4のclient_idとは別物）。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>確認軸：誰が・どこで乗せるか</h3>
+      <ul class="clean" style="margin:0">
+        <li>gclid等は<b>動的に付くパラメータ</b>。流入URLに乗せる側も<b>動的付与が必要</b>（手動は非現実的）。</li>
+        <li>方法は大きく2つ：<b>GTMで動的付与</b> ／ <b>LP（サイト）改修で付与</b>。</li>
+        <li>ツール制約に注意（社内事例：<b>tetoriは対応不可・LP内バナーのみ</b> 等）。先方のタグ管理・LP構成次第。</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <h2>3. ② ME → sGTM 送信 ＝ 案B（推奨）</h2>
+  <p class="lead">公開APIで読み出し口があることを確認済み。“配信＋Webhook（未検証）”依存を回避できる。</p>
+  <div class="cards">
+    <div class="card reco">
+      <h3><span class="badge ok">推奨</span> 案B：Prismatic × カスタマー参照APIポーリング</h3>
+      <ul class="clean" style="margin:0">
+        <li><b>GET /v1/customer</b> が <code>update_datetime_from/to</code>（最終更新日時）＋ <code>next_token</code>（ページング）に対応 → <b>差分ポーリングに最適</b>。</li>
+        <li>Prismaticが更新分を取得 → CV/gclidが属性にあれば拾う → <b>sGTMへPOST</b>。</li>
+        <li>認証：<code>x-api-key</code> ＋ <code>x-site-uuid</code>。ecforce→MEで運用中のPrismaticポーリングの“逆向き”版。</li>
+        <li>レイテンシ＝ポーリング間隔（数分）。CAPIアップロードは即時必須でないため許容。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><span class="badge q">代替</span> 案A：ME標準Webhook発火</h3>
+      <ul class="clean" style="margin:0">
+        <li>「配信メッセージにWebhookを紐づけて発火」→ sGTM/Prismaticで受ける。</li>
+        <li><b>未検証（テスト待ち）</b>。本間さんの見立ては「多分可能」だが実機確認が必要。</li>
+        <li>案Bが成立するなら、この未検証ポイントに依存しなくてよい。</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout warn">
+    <p style="margin:0"><span class="ic">★</span><b>案Bの前提（要確認）：</b>参照APIで取れるのは<b>カスタマー属性中心</b>（配信/クリックログはETL/DWH経路）。よって<b>CV発生は「カスタム属性」として表現</b>する設計が必要（例：<code>last_cv_at</code> / <code>gclid</code> を属性で持つ）。Webタグはカスタム属性を更新できるので無理はない。</p>
+  </div>
+
+  <!-- 4 -->
+  <h2>4. ③ sGTM → 各媒体CAPI（先方）</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>先方領域</h3>
+      <ul class="clean" style="margin:0">
+        <li>sGTM上のサーバータグから Meta/Google/Yahoo の CAPI へ送信。</li>
+        <li>コンテナ構築・サーバータグ・認証情報は先方。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>dedup（二重計上防止）必須</h3>
+      <ul class="clean" style="margin:0">
+        <li>Shopifyのブラウザ側ピクセルとサーバー送信が両方走ると二重計上。</li>
+        <li><b><code>event_id</code> で名寄せ</b>する設計を入れる。</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <h2>5. 戦略ゲート：CVの「真実の所在」</h2>
+  <div class="callout bad">
+    <ul class="clean" style="margin:0">
+      <li>CVが <b>Shopify購入完了（ブラウザ完結）だけ</b>なら、gclidもブラウザにあり <b>先方のGTM→sGTM直送で完結</b>でき、<b>MEを噛ませる必然性が薄い</b>。</li>
+      <li>MEを通す意味があるのは、CVが <b>MEしか持たない情報</b>（LINE経由・購入後の突合・uid統合 等）の場合。</li>
+      <li>→ <b>CVの“真実”がどこにあるかを社内で先に握る</b>。ここで構成と「sGTMだけでは足りない理由」の説明が決まる。</li>
+    </ul>
+  </div>
+
+  <!-- 6 -->
+  <h2>6. MTG論点（社内で握る / 先方に確認）</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>社内で握る点</h3>
+      <ul class="clean" style="margin:0">
+        <li><b>CVの真実の所在</b>とMEを経路に入れる根拠。</li>
+        <li>案Bの読み出し設計：<b>CV/gclidをカスタム属性化</b>（<code>last_cv_at</code>等）。</li>
+        <li>本間さんへの確認を「②Webhook飛ぶか」から「<b>参照APIの更新日時ポーリングで案Bが成立するか</b>」に切替。</li>
+        <li>dedup方針（<code>event_id</code>）。</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>先方に確認する点</h3>
+      <ul class="clean" style="margin:0">
+        <li>gclid捕捉は <b>GTM か LP改修か</b>（動的付与の実装場所）。</li>
+        <li>sGTMの状況（コンテナ構築済みか・認証情報）。</li>
+        <li>返したい <b>媒体（Meta/Google/Yahoo）× CV（購入完了/友だち追加/申込）</b>。</li>
+        <li>ブラウザピクセルとの二重計上＝<code>event_id</code>運用。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="foot">
+    出典：Mico×sGTM/CAPI検討メモ（2026-06-07）/ Slack（#ME Webhook仕様確認・本間・長江）/ Mico Engage AI API（Swagger：一斉配信API・カスタマー参照API）/『データ連携まとめ』（gclidパラメータ属性化・GTM/LP改修・tetori不可）。②の案A（標準Webhook発火）は未検証。本資料はMico社内・MTG用ドラフト。
+  </div>
+
+</div>
+</body>
+</html>
